@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Auth\CustomLoginController;
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\Api\TerritorialApiController;
+use App\Http\Controllers\Auth\TwoFactorSetupController;
 
 // Landing page
 Route::get('/', function () {
@@ -25,13 +26,6 @@ Route::get('/login', [CustomLoginController::class, 'showLoginForm'])->name('log
 Route::post('/login', [CustomLoginController::class, 'login'])->name('login.submit');
 Route::post('/logout', [CustomLoginController::class, 'logout'])->name('logout');
 
-// Two-Factor Authentication Routes
-Route::middleware(['auth'])->group(function () {
-    Route::get('/two-factor', [TwoFactorController::class, 'show'])->name('two-factor.show');
-    Route::post('/two-factor', [TwoFactorController::class, 'verify'])->name('two-factor.verify');
-    Route::post('/two-factor/resend', [TwoFactorController::class, 'resend'])->name('two-factor.resend');
-});
-
 // API Routes for Territorial Data
 Route::prefix('api')->group(function () {
     Route::get('/voivodeships', [TerritorialApiController::class, 'getVoivodeships']);
@@ -44,4 +38,15 @@ Route::middleware(['auth', 'verified.2fa'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+});
+
+// 2FA Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/two-factor', [TwoFactorController::class, 'show'])->name('two-factor.show');
+    Route::post('/two-factor', [TwoFactorController::class, 'verify'])->name('two-factor.verify');
+    Route::post('/two-factor/email', [TwoFactorController::class, 'sendEmailCode'])->name('two-factor.email');
+
+    Route::get('/two-factor/setup', [TwoFactorSetupController::class, 'show'])->name('two-factor.setup');
+    Route::post('/two-factor/enable', [TwoFactorSetupController::class, 'enable'])->name('two-factor.enable');
+    Route::get('/two-factor/recovery-codes', [TwoFactorSetupController::class, 'showRecoveryCodes'])->name('two-factor.recovery-codes');
 });

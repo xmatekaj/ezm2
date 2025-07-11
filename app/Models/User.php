@@ -5,9 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use PragmaRX\Google2FA\Google2FA;
 
 class User extends Authenticatable
 {
@@ -15,141 +13,171 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
-        'first_name',
-        'last_name',
         'email',
         'password',
-        'user_type',
-        'phone',
-        'is_active',
-        'last_login_at',
-        'person_id',
         'two_factor_enabled',
-        'two_factor_method',
-        'two_factor_verified_at',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'email_verification_code',
     ];
 
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'last_login_at' => 'datetime',
-            'password' => 'hashed',
-            'is_active' => 'boolean',
-            'two_factor_enabled' => 'boolean',
             'two_factor_verified_at' => 'datetime',
+            'email_verification_code_expires_at' => 'datetime',
+            'password' => 'hashed',
+            'two_factor_enabled' => 'boolean',
         ];
     }
 
-    // Relationships
-    public function person(): BelongsTo
+    /**
+     * Get the recovery codes as an array
+     */
+    public function getRecoveryCodesAttribute()
     {
-        return $this->belongsTo(Person::class);
+        return $this->two_factor_recovery_codes
+            ? json_decode($this->two_factor_recovery_codes, true)
+            : [];
     }
 
-    public function communities(): BelongsToMany
+    /**
+     * Set the recovery codes from an array
+     */
+    public function setRecoveryCodesAttribute($value)
     {
-        return $this->belongsToMany(Community::class, 'user_communities')
-            ->withPivot(['access_type', 'permissions', 'is_active', 'verified_at', 'expires_at'])
-            ->withTimestamps();
+        $this->attributes['two_factor_recovery_codes'] = is_array($value)
+            ? json_encode($value)
+            : $value;
     }
 
-    public function userCommunities(): HasMany
+    /**
+     * Generate new 2FA secret
+     */
+    public function generateTwoFactorSecret()
     {
-        return $this->hasMany(UserCommunity::class);
+        $google2fa = new Google2FA();
+        $this->two_factor_secret = $google2fa->generateSecretKey();
+        $this->save();
+
+        return $this->two_factor_secret;
     }
 
-    public function registrationVerifications(): HasMany
+    /**
+     * Generate recovery codes
+     */
+    public function generateRecoveryCodes()
     {
-        return $this->hasMany(RegistrationVerification::class, 'email', 'email');
-    }
-
-    // Helper Methods
-    public function getFullNameAttribute(): string
-    {
-        if ($this->first_name && $this->last_name) {
-            return "{$this->first_name} {$this->last_name}";
-        }
-        return $this->name ?? $this->email;
-    }
-
-    public function isSuperAdmin(): bool
-    {
-        return $this->user_type === 'super_admin';
-    }
-
-    public function isOwner(): bool
-    {
-        return $this->user_type === 'owner';
-    }
-
-    public function hasAccessToCommunity(Community $community): bool
-    {
-        return $this->communities()
-            ->wherePivot('community_id', $community->id)
-            ->wherePivot('is_active', true)
-            ->exists();
-    }
-
-    public function getAccessibleCommunities()
-    {
-        return $this->communities()
-            ->wherePivot('is_active', true)
-            ->get();
-    }
-
-    public function getOwnedApartments()
-    {
-        if (!$this->person) {
-            return collect([]);
+        $codes = [];
+        for ($i = 0; $i < 8; $i++) {
+            $codes[] = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 10));
         }
 
-        return $this->person->apartments()->get();
+        $this->recovery_codes = $codes;
+        $this->save();
+
+        return $codes;
     }
 
-    public function canManageCommunity(Community $community): bool
+    /**
+     * Verify 2FA code
+     */
+    public function verifyTwoFactorCode($code)
     {
-        // Only super admin can manage communities
-        return $this->isSuperAdmin();
+        if (!$this->two_factor_secret) {
+            return false;
+        }
+
+        $google2fa = new Google2FA();
+        return $google2fa->verifyKey($this->two_factor_secret, $code);
     }
 
-    public function canViewApartment(Apartment $apartment): bool
+    /**
+     * Use recovery code
+     */
+    public function useRecoveryCode($code)
     {
-        if ($this->isSuperAdmin()) {
+        $codes = $this->recovery_codes;
+
+        if (($key = array_search(strtoupper($code), $codes)) !== false) {
+            unset($codes[$key]);
+            $this->recovery_codes = array_values($codes);
+            $this->save();
             return true;
-        }
-
-        // Regular owners can only see their own apartments
-        if ($this->isOwner() && $this->person) {
-            return $this->person->apartments()
-                ->where('apartments.id', $apartment->id)
-                ->exists();
         }
 
         return false;
     }
 
-    // Scopes
-    public function scopeActive($query)
+    /**
+     * Generate email verification code
+     */
+    public function generateEmailVerificationCode()
     {
-        return $query->where('is_active', true);
+        $this->email_verification_code = sprintf('%06d', random_int(0, 999999));
+        $this->email_verification_code_expires_at = now()->addMinutes(15);
+        $this->save();
+
+        return $this->email_verification_code;
     }
 
-    public function scopeOwners($query)
+    /**
+     * Verify email code
+     */
+    public function verifyEmailCode($code)
     {
-        return $query->where('user_type', 'owner');
+        return $this->email_verification_code === $code
+            && $this->email_verification_code_expires_at
+            && $this->email_verification_code_expires_at->isFuture();
     }
 
-    public function scopeForCommunity($query, $communityId)
+    /**
+     * Clear email verification code
+     */
+    public function clearEmailVerificationCode()
     {
-        return $query->whereHas('communities', function ($q) use ($communityId) {
-            $q->where('community_id', $communityId)
-              ->wherePivot('is_active', true);
-        });
+        $this->email_verification_code = null;
+        $this->email_verification_code_expires_at = null;
+        $this->save();
+    }
+
+    /**
+     * Check if 2FA is required for this user
+     */
+    public function requiresTwoFactor()
+    {
+        return $this->two_factor_enabled && !$this->two_factor_verified_at;
+    }
+
+    /**
+     * Mark 2FA as verified for this session
+     */
+    public function markTwoFactorVerified()
+    {
+        $this->two_factor_verified_at = now();
+        $this->save();
+    }
+
+    /**
+     * Get QR Code URL for Google Authenticator
+     */
+    public function getQrCodeUrl()
+    {
+        if (!$this->two_factor_secret) {
+            return null;
+        }
+
+        $google2fa = new Google2FA();
+        return $google2fa->getQRCodeUrl(
+            config('app.name'),
+            $this->email,
+            $this->two_factor_secret
+        );
     }
 }
