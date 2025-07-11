@@ -1,0 +1,1 @@
+'verified.2fa' => \App\Http\Middleware\EnsureTwoFactorVerified::class,
