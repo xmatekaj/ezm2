@@ -69,34 +69,6 @@ class TwoFactorController extends Controller
         return redirect()->intended('/admin');
     }
 
-    /**
-     * Send email verification code
-     */
-    public function sendEmailCode(Request $request)
-    {
-        $user = Auth::user();
-
-        if (!$user) {
-            return response()->json(['error' => 'Nie jesteś zalogowany'], 401);
-        }
-
-        // Generate and send email code
-        $code = $user->generateEmailVerificationCode();
-
-        try {
-            Mail::to($user->email)->send(new TwoFactorCodeMail($code));
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Kod został wysłany na Twój adres email'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Błąd podczas wysyłania kodu'
-            ], 500);
-        }
-    }
 
     /**
      * Show recovery code form

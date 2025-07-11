@@ -11,15 +11,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-    $middleware->alias([
-        'two-factor' => \App\Http\Middleware\TwoFactorAuthenticated::class,
-        'two-factor-reminder' => \App\Http\Middleware\TwoFactorReminder::class,
-    ]);
+        $middleware->alias([
+            'two-factor' => \App\Http\Middleware\TwoFactorAuthenticated::class,
+            'two-factor-reminder' => \App\Http\Middleware\TwoFactorReminder::class,
+        ]);
 
-    // Apply 2FA reminder to all authenticated routes
-    $middleware->appendToGroup('web', [
-        \App\Http\Middleware\TwoFactorReminder::class,
-    ]);
+        $middleware->appendToGroup('web', [
+            \App\Http\Middleware\TwoFactorReminder::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

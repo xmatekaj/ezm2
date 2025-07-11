@@ -38,16 +38,16 @@ class CustomLoginController extends Controller
             if ($user->two_factor_enabled) {
                 // Generate and send 2FA code
                 $this->twoFactorService->generateCode($user);
-                
+
                 return redirect()->route('two-factor.show')
-                    ->with('success', 'Kod weryfikacyjny został wysłany na ' . 
+                    ->with('success', 'Kod weryfikacyjny został wysłany na ' .
                         ($user->two_factor_method === 'sms' ? 'SMS' : 'email') . '.');
             }
 
             // Update last login
             $user->update(['last_login_at' => now()]);
 
-            return redirect()->intended('/admin') // Redirect to Filament admin
+            return redirect()->intended('/dashboard')
                 ->with('success', 'Zalogowano pomyślnie.');
         }
 

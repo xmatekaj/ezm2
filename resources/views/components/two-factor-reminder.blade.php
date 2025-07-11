@@ -16,15 +16,15 @@
                 </div>
             </div>
             <div class="flex items-center space-x-3">
-                <a href="{{ route('two-factor.setup') }}" 
+                <a href="{{ route('two-factor.setup') }}"
                    class="bg-white text-orange-600 hover:text-orange-700 font-semibold py-1 px-3 rounded text-sm transition duration-150 ease-in-out">
                     Włącz teraz
                 </a>
-                <button onclick="dismiss2FAReminder()" 
+                <button onclick="dismiss2FAReminder()"
                         class="text-white hover:text-orange-200 font-medium text-sm underline">
-                    Nie teraz
+                    Później
                 </button>
-                <button onclick="dismiss2FAReminder()" 
+                <button onclick="dismiss2FAReminder()"
                         class="text-white hover:text-orange-200">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -37,22 +37,13 @@
 
 <script>
 function dismiss2FAReminder() {
-    // Hide the reminder
+    // Hide the reminder for this page load only
     document.getElementById('2fa-reminder').style.display = 'none';
-    
-    // Store dismissal in session via AJAX
-    fetch('/dismiss-2fa-reminder', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        }
-    });
 }
 </script>
 
 <style>
     /* Push content down when reminder is shown */
-    body { padding-top: 60px; }
+    #2fa-reminder ~ * { margin-top: 60px; }
 </style>
 @endif

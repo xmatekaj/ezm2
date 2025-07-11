@@ -40,7 +40,7 @@ class Person extends Model
 
     public function apartments(): BelongsToMany
     {
-        return $this->belongsToMany(Apartment::class, 'apartment_people')
+        return $this->belongsToMany(Apartment::class, 'apartment_person')
             ->withPivot('ownership_share', 'is_primary')
             ->withTimestamps();
     }

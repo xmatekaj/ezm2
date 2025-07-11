@@ -22,9 +22,9 @@ class TwoFactorReminder
                 'logout'
             ];
 
+            // Always show reminder for users without 2FA (except on excluded routes)
             if (!$request->ajax() &&
-                !in_array($request->route()->getName(), $excludedRoutes) &&
-                !$request->session()->has('2fa_reminder_dismissed_' . $user->id)) {
+                !in_array($request->route()->getName(), $excludedRoutes)) {
 
                 session()->flash('show_2fa_reminder', true);
             }
