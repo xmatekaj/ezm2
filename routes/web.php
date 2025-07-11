@@ -7,6 +7,14 @@ use App\Http\Controllers\Auth\CustomLoginController;
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\Api\TerritorialApiController;
 use App\Http\Controllers\Auth\TwoFactorSetupController;
+use App\Http\Controllers\DashboardController;
+
+
+// Dashboard routes
+Route::middleware(['auth', 'two-factor'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/owner/dashboard', [DashboardController::class, 'ownerDashboard'])->name('owner.dashboard');
+});
 
 // Landing page
 Route::get('/', function () {
@@ -33,11 +41,9 @@ Route::prefix('api')->group(function () {
     Route::get('/streets/{voivodeship}/{city}', [TerritorialApiController::class, 'getStreets']);
 });
 
-// Dashboard (after login)
-Route::middleware(['auth', 'verified.2fa'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+// 2FA reminder dismissal
+Route::middleware(['auth'])->group(function () {
+    Route::post('/dismiss-2fa-reminder', [DashboardController::class, 'dismiss2FAReminder'])->name('dismiss-2fa-reminder');
 });
 
 // 2FA Routes
@@ -49,4 +55,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/two-factor/setup', [TwoFactorSetupController::class, 'show'])->name('two-factor.setup');
     Route::post('/two-factor/enable', [TwoFactorSetupController::class, 'enable'])->name('two-factor.enable');
     Route::get('/two-factor/recovery-codes', [TwoFactorSetupController::class, 'showRecoveryCodes'])->name('two-factor.recovery-codes');
+    Route::post('/two-factor/regenerate-recovery-codes', [TwoFactorSetupController::class, 'regenerateRecoveryCodes'])->name('two-factor.regenerate-recovery-codes');
 });

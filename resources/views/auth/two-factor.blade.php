@@ -9,7 +9,7 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -22,9 +22,8 @@
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
         <div class="mb-6">
             <a href="/" class="flex items-center justify-center">
-                <div class="w-16 h-16 bg-indigo-600 rounded-lg flex items-center justify-center">
-                    <span class="text-white text-2xl font-bold">{{ substr(config('app.name', 'WM'), 0, 2) }}</span>
-                </div>
+                <img src="{{ asset('graphics/logo.svg') }}" alt="eZM2" class="w-64"
+                     onerror="this.onerror=null; this.src='{{ asset('graphics/logo_size_1.png') }}';" />
             </a>
         </div>
 
@@ -51,13 +50,13 @@
                     <label for="code" class="block font-medium text-sm text-gray-700 mb-2">
                         Kod uwierzytelniający
                     </label>
-                    <input id="code" 
-                           class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full text-center text-2xl tracking-widest py-3" 
-                           type="text" 
-                           name="code" 
-                           value="{{ old('code') }}" 
-                           required 
-                           autofocus 
+                    <input id="code"
+                           class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full text-center text-2xl tracking-widest py-3"
+                           type="text"
+                           name="code"
+                           value="{{ old('code') }}"
+                           required
+                           autofocus
                            autocomplete="one-time-code"
                            maxlength="6"
                            placeholder="000000" />
@@ -67,7 +66,7 @@
                 </div>
 
                 <div class="flex items-center justify-between mt-6">
-                    <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
+                    <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                        href="{{ route('logout') }}"
                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         Wyloguj
@@ -104,7 +103,7 @@
                 value = value.substring(0, 6);
             }
             e.target.value = value;
-            
+
             if (value.length === 6) {
                 e.target.form.submit();
             }

@@ -8,7 +8,7 @@
     <title>{{ config('app.name', 'Laravel') }} - Konfiguracja 2FA</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
@@ -20,9 +20,8 @@
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
         <div class="mb-6">
             <a href="/" class="flex items-center justify-center">
-                <div class="w-16 h-16 bg-indigo-600 rounded-lg flex items-center justify-center">
-                    <span class="text-white text-2xl font-bold">{{ substr(config('app.name', 'WM'), 0, 2) }}</span>
-                </div>
+                <img src="{{ asset('graphics/logo.svg') }}" alt="eZM2" class="w-64"
+                     onerror="this.onerror=null; this.src='{{ asset('graphics/logo_size_1.png') }}';" />
             </a>
         </div>
 
@@ -67,7 +66,7 @@
                     <div class="bg-white p-3 rounded border font-mono text-sm break-all">
                         {{ $manualKey }}
                     </div>
-                    <button onclick="copyToClipboard('{{ $manualKey }}')" 
+                    <button onclick="copyToClipboard('{{ $manualKey }}')"
                             class="mt-2 text-sm text-indigo-600 hover:text-indigo-800">
                         📋 Skopiuj klucz
                     </button>
@@ -88,17 +87,17 @@
                             <label for="code" class="block font-medium text-sm text-gray-700 mb-2">
                                 Kod z aplikacji
                             </label>
-                            <input id="code" 
-                                   class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full text-center text-xl tracking-widest py-2" 
-                                   type="text" 
-                                   name="code" 
-                                   required 
-                                   autofocus 
+                            <input id="code"
+                                   class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block w-full text-center text-xl tracking-widest py-2"
+                                   type="text"
+                                   name="code"
+                                   required
+                                   autofocus
                                    autocomplete="one-time-code"
                                    maxlength="6"
                                    placeholder="000000" />
                         </div>
-                        <button type="submit" 
+                        <button type="submit"
                                 class="px-6 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
                             Włącz 2FA
                         </button>
@@ -118,11 +117,11 @@
             </div>
 
             <div class="mt-6 flex justify-between">
-                <a href="/admin" 
+                <a href="/admin"
                    class="text-sm text-gray-600 hover:text-gray-900 underline">
                     ← Pomiń na razie
                 </a>
-                <a href="/profile" 
+                <a href="/profile"
                    class="text-sm text-indigo-600 hover:text-indigo-800 underline">
                     Zarządzaj profilem →
                 </a>

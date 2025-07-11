@@ -10,8 +10,16 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        //
+    ->withMiddleware(function (Middleware $middleware) {
+    $middleware->alias([
+        'two-factor' => \App\Http\Middleware\TwoFactorAuthenticated::class,
+        'two-factor-reminder' => \App\Http\Middleware\TwoFactorReminder::class,
+    ]);
+
+    // Apply 2FA reminder to all authenticated routes
+    $middleware->appendToGroup('web', [
+        \App\Http\Middleware\TwoFactorReminder::class,
+    ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

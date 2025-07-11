@@ -180,4 +180,85 @@ class User extends Authenticatable
             $this->two_factor_secret
         );
     }
+
+    /**
+     * Check if user is a company user (admin, accountant, technician, etc.)
+     */
+    public function isCompanyUser()
+    {
+        return in_array($this->user_type, ['admin', 'accountant', 'technician', 'manager']);
+    }
+
+    /**
+     * Check if user is an apartment owner
+     */
+    public function isOwner()
+    {
+        return $this->user_type === 'owner';
+    }
+
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin()
+    {
+        return $this->user_type === 'admin';
+    }
+
+    /**
+     * Check if user is accountant
+     */
+    public function isAccountant()
+    {
+        return $this->user_type === 'accountant';
+    }
+
+    /**
+     * Check if user is technician
+     */
+    public function isTechnician()
+    {
+        return $this->user_type === 'technician';
+    }
+
+    /**
+     * Get user's dashboard route based on role
+     */
+    public function getDashboardRoute()
+    {
+        return match($this->user_type) {
+            'admin' => '/admin',
+            'accountant' => '/admin/financial-transactions',
+            'technician' => '/admin/water-meters',
+            'manager' => '/admin/communities',
+            'owner' => '/owner/dashboard',
+            default => '/profile'
+        };
+    }
+
+    /**
+     * Get user's allowed navigation items
+     */
+    public function getAllowedNavigation()
+    {
+        return match($this->user_type) {
+            'admin' => [
+                'communities', 'apartments', 'people', 'financial-transactions',
+                'water-meters', 'prices', 'reports'
+            ],
+            'accountant' => [
+                'financial-transactions', 'apartments', 'people', 'reports'
+            ],
+            'technician' => [
+                'water-meters', 'apartments', 'communities'
+            ],
+            'manager' => [
+                'communities', 'apartments', 'people'
+            ],
+            'owner' => [
+                'my-apartment', 'payments', 'water-readings', 'documents'
+            ],
+            default => []
+        };
+    }
 }
