@@ -43,8 +43,8 @@ class TwoFactorController extends Controller
         $code = $request->code;
         $verified = false;
 
-        // Try TOTP first
-        if ($user->two_factor_secret && $user->verifyTwoFactorCode($code)) {
+        // Try TOTP first (if user has 2FA enabled with secret)
+        if ($user->two_factor_enabled && $user->two_factor_secret && $user->verifyTwoFactorCode($code)) {
             $verified = true;
         }
         // Try email code
@@ -66,9 +66,37 @@ class TwoFactorController extends Controller
         // Mark as verified for this session
         $user->markTwoFactorVerified();
 
-        return redirect()->intended('/admin');
+        return redirect()->intended('/dashboard');
     }
 
+    /**
+     * Send email verification code
+     */
+    public function sendEmailCode(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Nie jesteś zalogowany'], 401);
+        }
+
+        // Generate and send email code using the direct User method
+        $code = $user->generateEmailVerificationCode();
+
+        try {
+            Mail::to($user->email)->send(new TwoFactorCodeMail($code));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Kod został wysłany na Twój adres email'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Błąd podczas wysyłania kodu'
+            ], 500);
+        }
+    }
 
     /**
      * Show recovery code form

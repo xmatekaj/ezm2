@@ -36,8 +36,6 @@ class CustomLoginController extends Controller
             $user = Auth::user();
 
             if ($user->two_factor_enabled) {
-                // Generate and send 2FA code
-                $this->twoFactorService->generateCode($user);
 
                 return redirect()->route('two-factor.show')
                     ->with('success', 'Kod weryfikacyjny został wysłany na ' .

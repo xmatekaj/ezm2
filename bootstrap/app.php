@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'two-factor' => \App\Http\Middleware\TwoFactorAuthenticated::class,
             'two-factor-reminder' => \App\Http\Middleware\TwoFactorReminder::class,
+            'role' => \App\Http\Middleware\CheckUserRole::class,
         ]);
 
         $middleware->appendToGroup('web', [

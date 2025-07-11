@@ -10,13 +10,10 @@ use App\Http\Controllers\Auth\TwoFactorSetupController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 
-
 // Dashboard routes
 Route::middleware(['auth', 'two-factor'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/owner/dashboard', [DashboardController::class, 'ownerDashboard'])->name('owner.dashboard');
 });
-
 
 // Landing page
 Route::get('/', function () {
@@ -47,6 +44,7 @@ Route::prefix('api')->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::post('/dismiss-2fa-reminder', [DashboardController::class, 'dismiss2FAReminder'])->name('dismiss-2fa-reminder');
 });
+
 // Profile routes
 Route::middleware(['auth', 'two-factor'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
@@ -54,6 +52,12 @@ Route::middleware(['auth', 'two-factor'])->group(function () {
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 });
 
+
+
+// Owner routes - only for owners
+Route::middleware(['auth', 'two-factor', 'role:owner'])->group(function () {
+    Route::get('/owner/dashboard', [DashboardController::class, 'ownerDashboard'])->name('owner.dashboard');
+});
 
 // 2FA Routes
 Route::middleware(['auth'])->group(function () {
@@ -65,7 +69,5 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/two-factor/enable', [TwoFactorSetupController::class, 'enable'])->name('two-factor.enable');
     Route::get('/two-factor/recovery-codes', [TwoFactorSetupController::class, 'showRecoveryCodes'])->name('two-factor.recovery-codes');
     Route::post('/two-factor/regenerate-recovery-codes', [TwoFactorSetupController::class, 'regenerateRecoveryCodes'])->name('two-factor.regenerate-recovery-codes');
-
-
     Route::post('/two-factor/disable', [TwoFactorSetupController::class, 'disable'])->name('two-factor.disable');
 });

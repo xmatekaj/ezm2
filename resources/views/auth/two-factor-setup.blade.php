@@ -20,7 +20,7 @@
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
         <div class="mb-6">
             <a href="/" class="flex items-center justify-center">
-                <img src="{{ asset('graphics/logo.svg') }}" alt="eZM2" class="w-64"
+                <img src="{{ asset('graphics/logo.svg') }}" alt="eZM2" class="w-24 h-24"
                      onerror="this.onerror=null; this.src='{{ asset('graphics/logo_size_1.png') }}';" />
             </a>
         </div>
@@ -117,11 +117,11 @@
             </div>
 
             <div class="mt-6 flex justify-between">
-                <a href="/admin"
+                <a href="{{ auth()->user()->getDashboardRoute() }}"
                    class="text-sm text-gray-600 hover:text-gray-900 underline">
                     ← Pomiń na razie
                 </a>
-                <a href="/profile"
+                <a href="{{ route('profile.show') }}"
                    class="text-sm text-indigo-600 hover:text-indigo-800 underline">
                     Zarządzaj profilem →
                 </a>

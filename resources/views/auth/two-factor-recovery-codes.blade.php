@@ -24,7 +24,7 @@
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
         <div class="mb-6 no-print">
             <a href="/" class="flex items-center justify-center">
-                <img src="{{ asset('graphics/logo.svg') }}" alt="eZM2" class="w-64" 
+                <img src="{{ asset('graphics/logo.svg') }}" alt="eZM2" class="w-24 h-24" 
                      onerror="this.onerror=null; this.src='{{ asset('graphics/logo_size_1.png') }}';" />
             </a>
         </div>
@@ -101,7 +101,7 @@
 
             <!-- Navigation -->
             <div class="mt-6 flex justify-between no-print">
-                <a href="/admin" 
+                <a href="{{ auth()->user()->getDashboardRoute() }}" 
                    class="text-sm text-gray-600 hover:text-gray-900 underline">
                     ← Przejdź do panelu
                 </a>

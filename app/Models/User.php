@@ -186,7 +186,15 @@ class User extends Authenticatable
      */
     public function isCompanyUser()
     {
-        return in_array($this->user_type, ['admin', 'accountant', 'technician', 'manager']);
+        return in_array($this->user_type, ['super_admin', 'admin', 'accountant', 'technician', 'manager']);
+    }
+
+    /**
+     * Check if user is super admin
+     */
+    public function isSuperAdmin()
+    {
+        return $this->user_type === 'super_admin';
     }
 
     /**
@@ -227,6 +235,7 @@ class User extends Authenticatable
     public function getDashboardRoute()
     {
         return match($this->user_type) {
+            'super_admin' => '/admin',
             'admin' => '/admin',
             'accountant' => '/admin/financial-transactions',
             'technician' => '/admin/water-meters',
