@@ -129,6 +129,10 @@ class PersonResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->headerActions([
+                \App\Filament\Actions\ImportAction::downloadTemplate('people', 'Osoby'),
+                \App\Filament\Actions\ImportAction::make('people', 'Importuj osoby'),
+            ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Aktywny'),

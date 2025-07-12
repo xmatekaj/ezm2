@@ -3,22 +3,22 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Services\Import\ImportManager;
+use App\Services\Import\CsvTemplateGenerator;
+use App\Services\Import\ImportMappingService;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        // Register import services as singletons
+        $this->app->singleton(ImportManager::class);
+        $this->app->singleton(CsvTemplateGenerator::class);
+        $this->app->singleton(ImportMappingService::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
+        // Boot logic if needed
     }
 }

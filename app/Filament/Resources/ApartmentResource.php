@@ -154,6 +154,10 @@ class ApartmentResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->headerActions([
+                \App\Filament\Actions\ImportAction::downloadTemplate('apartments', 'Mieszkania'),
+                \App\Filament\Actions\ImportAction::make('apartments', 'Importuj mieszkania'),
+            ])
             ->filters([
                 Tables\Filters\SelectFilter::make('community_id')
                     ->label('Wspólnota')

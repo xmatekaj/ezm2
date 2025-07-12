@@ -4,21 +4,21 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CommunityResource\Pages;
 use App\Models\Community;
+use App\Services\Import\ImportManager;
+use App\Services\Import\CsvTemplateGenerator;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
 
 class CommunityResource extends Resource
 {
     protected static ?string $model = Community::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
-
     protected static ?string $navigationGroup = 'Zarządzanie';
-
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
@@ -175,6 +175,10 @@ class CommunityResource extends Resource
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_active')
                     ->label('Aktywna'),
+            ])
+            ->headerActions([
+                \App\Filament\Actions\ImportAction::downloadTemplate('communities', 'Wspólnoty'),
+                \App\Filament\Actions\ImportAction::make('communities', 'Importuj wspólnoty'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

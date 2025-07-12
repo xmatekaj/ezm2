@@ -1,0 +1,786 @@
+<?php
+
+// CSV Template Generator Service
+namespace App\Services\Import;
+
+use Illuminate\Support\Facades\Storage;
+
+class CsvTemplateGenerator
+{
+    protected $templates = [
+        'communities' => [
+            'headers' => [
+                'name',
+                'full_name',
+                'street',
+                'postal_code',
+                'city',
+                'state',
+                'regon',
+                'tax_id',
+                'manager_name',
+                'manager_street',
+                'manager_postal_code',
+                'manager_city',
+                'common_area_size',
+                'apartments_area',
+                'apartment_count',
+                'has_elevator'
+            ],
+            'sample_data' => [
+                [
+                    'WM "Słoneczna"',
+                    'Wspólnota Mieszkaniowa przy ul. Słonecznej 15',
+                    'ul. Słoneczna 15',
+                    '40-001',
+                    'Katowice',
+                    'śląskie',
+                    '123456789',
+                    '1234567890',
+                    'Zarządca ABC Sp. z o.o.',
+                    'ul. Zarządu 1',
+                    '40-002',
+                    'Katowice',
+                    '250.50',
+                    '1500.75',
+                    '24',
+                    'tak'
+                ]
+            ]
+        ],
+        
+        'apartments' => [
+            'headers' => [
+                'community_name',
+                'building_number',
+                'apartment_number',
+                'area',
+                'basement_area',
+                'storage_area',
+                'heated_area',
+                'common_area_share',
+                'floor',
+                'elevator_fee_coefficient',
+                'has_basement',
+                'has_storage',
+                'is_owned',
+                'is_commercial'
+            ],
+            'sample_data' => [
+                [
+                    'WM "Słoneczna"',
+                    '1',
+                    '1',
+                    '45.50',
+                    '3.20',
+                    '2.50',
+                    '45.50',
+                    '4.25',
+                    '0',
+                    '1.00',
+                    'tak',
+                    'tak',
+                    'tak',
+                    'nie'
+                ],
+                [
+                    'WM "Słoneczna"',
+                    '1',
+                    '2',
+                    '62.30',
+                    '',
+                    '2.50',
+                    '62.30',
+                    '5.85',
+                    '1',
+                    '1.00',
+                    'nie',
+                    'tak',
+                    'tak',
+                    'nie'
+                ]
+            ]
+        ],
+        
+        'people' => [
+            'headers' => [
+                'first_name',
+                'last_name',
+                'email',
+                'phone',
+                'street',
+                'postal_code',
+                'city',
+                'ownership_share',
+                'notes'
+            ],
+            'sample_data' => [
+                [
+                    'Jan',
+                    'Kowalski',
+                    'jan.kowalski@example.com',
+                    '+48 123 456 789',
+                    'ul. Mieszkańcowa 10/5',
+                    '40-001',
+                    'Katowice',
+                    '100.00',
+                    'Właściciel mieszkania'
+                ],
+                [
+                    'Anna',
+                    'Nowak',
+                    'anna.nowak@example.com',
+                    '+48 987 654 321',
+                    'ul. Inna 5',
+                    '40-002',
+                    'Katowice',
+                    '50.00',
+                    'Współwłaściciel'
+                ]
+            ]
+        ],
+        
+        'water_meters' => [
+            'headers' => [
+                'community_name',
+                'apartment_number',
+                'meter_number',
+                'transmitter_number',
+                'installation_date',
+                'meter_expiry_date',
+                'transmitter_installation_date',
+                'transmitter_expiry_date'
+            ],
+            'sample_data' => [
+                [
+                    'WM "Słoneczna"',
+                    '1',
+                    '100001',
+                    '200001',
+                    '2023-01-15',
+                    '2029-01-15',
+                    '2023-01-15',
+                    '2028-01-15'
+                ],
+                [
+                    'WM "Słoneczna"',
+                    '2',
+                    '100002',
+                    '200002',
+                    '2023-01-16',
+                    '2029-01-16',
+                    '2023-01-16',
+                    '2028-01-16'
+                ]
+            ]
+        ]
+    ];
+
+    public function generateTemplate(string $type, bool $includeSampleData = true): string
+    {
+        if (!isset($this->templates[$type])) {
+            throw new \InvalidArgumentException("Unknown template type: {$type}");
+        }
+
+        $template = $this->templates[$type];
+        $csv = '';
+
+        // Add headers
+        $csv .= implode(',', $this->escapeHeadersForCsv($template['headers'])) . "\n";
+
+        // Add sample data if requested
+        if ($includeSampleData && isset($template['sample_data'])) {
+            foreach ($template['sample_data'] as $row) {
+                $csv .= implode(',', $this->escapeRowForCsv($row)) . "\n";
+            }
+        }
+
+        return $csv;
+    }
+
+    public function downloadTemplate(string $type, bool $includeSampleData = true): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $csv = $this->generateTemplate($type, $includeSampleData);
+        $filename = "template_{$type}_" . date('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($csv) {
+            echo $csv;
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    public function getAvailableTemplates(): array
+    {
+        return array_keys($this->templates);
+    }
+
+    public function getTemplateInfo(string $type): array
+    {
+        if (!isset($this->templates[$type])) {
+            throw new \InvalidArgumentException("Unknown template type: {$type}");
+        }
+
+        $template = $this->templates[$type];
+        
+        return [
+            'type' => $type,
+            'headers' => $template['headers'],
+            'column_count' => count($template['headers']),
+            'sample_rows' => count($template['sample_data'] ?? []),
+            'description' => $this->getTemplateDescription($type),
+            'required_fields' => $this->getRequiredFields($type),
+        ];
+    }
+
+    protected function getTemplateDescription(string $type): string
+    {
+        return match($type) {
+            'communities' => 'Import housing communities with their basic information and management details.',
+            'apartments' => 'Import apartments for a specific community. Requires community to exist first.',
+            'people' => 'Import people/residents with their contact and ownership information.',
+            'water_meters' => 'Import water meters assigned to apartments. Requires apartments to exist first.',
+            default => "Import {$type} data."
+        };
+    }
+
+    protected function getRequiredFields(string $type): array
+    {
+        return match($type) {
+            'communities' => ['name', 'full_name', 'street', 'postal_code', 'city', 'regon', 'tax_id'],
+            'apartments' => ['apartment_number', 'community_name'],
+            'people' => ['first_name', 'last_name'],
+            'water_meters' => ['community_name', 'apartment_number', 'meter_number', 'installation_date', 'meter_expiry_date'],
+            default => []
+        };
+    }
+
+    protected function escapeHeadersForCsv(array $headers): array
+    {
+        return array_map(function ($header) {
+            return '"' . str_replace('"', '""', $header) . '"';
+        }, $headers);
+    }
+
+    protected function escapeRowForCsv(array $row): array
+    {
+        return array_map(function ($value) {
+            if (is_null($value)) {
+                return '';
+            }
+            
+            $value = (string) $value;
+            
+            // If value contains comma, quote, or newline, wrap in quotes
+            if (strpos($value, ',') !== false || 
+                strpos($value, '"') !== false || 
+                strpos($value, "\n") !== false) {
+                $value = '"' . str_replace('"', '""', $value) . '"';
+            }
+            
+            return $value;
+        }, $row);
+    }
+}
+
+// Template Controller
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Services\Import\CsvTemplateGenerator;
+use Illuminate\Http\Request;
+
+class TemplateController extends Controller
+{
+    protected CsvTemplateGenerator $templateGenerator;
+
+    public function __construct(CsvTemplateGenerator $templateGenerator)
+    {
+        $this->templateGenerator = $templateGenerator;
+    }
+
+    public function index()
+    {
+        $templates = [];
+        foreach ($this->templateGenerator->getAvailableTemplates() as $type) {
+            $templates[] = $this->templateGenerator->getTemplateInfo($type);
+        }
+
+        return response()->json([
+            'templates' => $templates
+        ]);
+    }
+
+    public function download(Request $request, string $type)
+    {
+        $request->validate([
+            'sample_data' => 'boolean'
+        ]);
+
+        $includeSampleData = $request->boolean('sample_data', true);
+
+        try {
+            return $this->templateGenerator->downloadTemplate($type, $includeSampleData);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 404);
+        }
+    }
+
+    public function preview(string $type)
+    {
+        try {
+            $info = $this->templateGenerator->getTemplateInfo($type);
+            $csvContent = $this->templateGenerator->generateTemplate($type, true);
+            
+            // Parse CSV for preview
+            $lines = explode("\n", trim($csvContent));
+            $headers = str_getcsv($lines[0]);
+            $rows = [];
+            
+            for ($i = 1; $i < count($lines) && $i <= 6; $i++) { // Max 5 sample rows
+                if (!empty($lines[$i])) {
+                    $rows[] = str_getcsv($lines[$i]);
+                }
+            }
+
+            return response()->json([
+                'info' => $info,
+                'preview' => [
+                    'headers' => $headers,
+                    'rows' => $rows
+                ]
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 404);
+        }
+    }
+}
+
+// Add to Filament Import Resource
+namespace App\Filament\Resources\ImportJobResource\Pages;
+
+use App\Filament\Resources\ImportJobResource;
+use App\Services\Import\CsvTemplateGenerator;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+class ListImportJobs extends ListRecords
+{
+    protected static string $resource = ImportJobResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\Action::make('download_templates')
+                ->label('Download Templates')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('info')
+                ->form([
+                    \Filament\Forms\Components\Select::make('template_type')
+                        ->label('Template Type')
+                        ->options([
+                            'communities' => 'Communities',
+                            'apartments' => 'Apartments',
+                            'people' => 'People',
+                            'water_meters' => 'Water Meters',
+                        ])
+                        ->required(),
+                    
+                    \Filament\Forms\Components\Toggle::make('include_sample_data')
+                        ->label('Include Sample Data')
+                        ->default(true)
+                        ->helperText('Include example rows in the template'),
+                ])
+                ->action(function (array $data) {
+                    $templateGenerator = app(CsvTemplateGenerator::class);
+                    return $templateGenerator->downloadTemplate(
+                        $data['template_type'],
+                        $data['include_sample_data']
+                    );
+                }),
+
+            Actions\CreateAction::make()
+                ->label('New Import'),
+        ];
+    }
+}
+
+// Import Mapping Configuration
+namespace App\Services\Import;
+
+class ImportMappingService
+{
+    public function detectColumns(string $filePath, array $options = []): array
+    {
+        $delimiter = $options['delimiter'] ?? ',';
+        $encoding = $options['encoding'] ?? 'UTF-8';
+
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            throw new \Exception("Cannot open file: {$filePath}");
+        }
+
+        // Convert encoding if needed
+        if ($encoding !== 'UTF-8') {
+            stream_filter_append($handle, 'convert.iconv.' . $encoding . '/UTF-8');
+        }
+
+        // Read first row (headers)
+        $headers = fgetcsv($handle, 0, $delimiter);
+        
+        // Read a few sample rows
+        $sampleRows = [];
+        for ($i = 0; $i < 5; $i++) {
+            $row = fgetcsv($handle, 0, $delimiter);
+            if ($row === false) break;
+            $sampleRows[] = $row;
+        }
+
+        fclose($handle);
+
+        return [
+            'headers' => $headers,
+            'sample_rows' => $sampleRows,
+            'suggested_mappings' => $this->suggestMappings($headers)
+        ];
+    }
+
+    public function suggestMappings(array $headers): array
+    {
+        $suggestions = [];
+        
+        foreach ($headers as $index => $header) {
+            $normalizedHeader = strtolower(trim($header));
+            $suggestion = $this->findBestMatch($normalizedHeader);
+            
+            if ($suggestion) {
+                $suggestions[$index] = $suggestion;
+            }
+        }
+
+        return $suggestions;
+    }
+
+    protected function findBestMatch(string $header): ?string
+    {
+        $mappings = [
+            // Communities
+            'name' => ['name', 'nazwa', 'community_name'],
+            'full_name' => ['full_name', 'pelna_nazwa', 'full name'],
+            'address_street' => ['street', 'ulica', 'address', 'adres'],
+            'address_postal_code' => ['postal_code', 'kod_pocztowy', 'zip', 'postal'],
+            'address_city' => ['city', 'miasto', 'miejscowosc'],
+            'regon' => ['regon'],
+            'tax_id' => ['tax_id', 'nip', 'tax'],
+            
+            // Apartments
+            'apartment_number' => ['apartment_number', 'numer_mieszkania', 'mieszkanie', 'apt'],
+            'building_number' => ['building_number', 'numer_budynku', 'budynek', 'building'],
+            'area' => ['area', 'powierzchnia', 'size'],
+            'floor' => ['floor', 'pietro', 'level'],
+            
+            // People
+            'first_name' => ['first_name', 'imie', 'firstname', 'name'],
+            'last_name' => ['last_name', 'nazwisko', 'surname', 'lastname'],
+            'email' => ['email', 'e-mail', 'mail'],
+            'phone' => ['phone', 'telefon', 'tel', 'mobile'],
+            
+            // Water meters
+            'meter_number' => ['meter_number', 'numer_wodomierza', 'wodomierz'],
+            'installation_date' => ['installation_date', 'data_instalacji', 'installed'],
+        ];
+
+        foreach ($mappings as $field => $patterns) {
+            foreach ($patterns as $pattern) {
+                if (strpos($header, $pattern) !== false || 
+                    similar_text($header, $pattern) / strlen($pattern) > 0.7) {
+                    return $field;
+                }
+            }
+        }
+
+        return null;
+    }
+}
+
+// Advanced Import Configuration Widget for Filament
+namespace App\Filament\Widgets;
+
+use App\Services\Import\ImportMappingService;
+use Filament\Widgets\Widget;
+use Illuminate\Support\Facades\Storage;
+
+class ImportMappingWidget extends Widget
+{
+    protected static string $view = 'filament.widgets.import-mapping';
+    
+    public ?string $filePath = null;
+    public array $detectedColumns = [];
+    public array $columnMappings = [];
+    public string $importType = '';
+
+    protected $listeners = [
+        'fileUploaded' => 'analyzeFile',
+        'importTypeChanged' => 'updateImportType',
+    ];
+
+    public function analyzeFile(string $filePath, array $options = []): void
+    {
+        $this->filePath = $filePath;
+        
+        try {
+            $mappingService = app(ImportMappingService::class);
+            $fullPath = Storage::disk('local')->path($filePath);
+            
+            $this->detectedColumns = $mappingService->detectColumns($fullPath, $options);
+            $this->columnMappings = $this->detectedColumns['suggested_mappings'] ?? [];
+            
+        } catch (\Exception $e) {
+            $this->addError('file_analysis', $e->getMessage());
+        }
+    }
+
+    public function updateImportType(string $type): void
+    {
+        $this->importType = $type;
+        
+        // Re-analyze with type-specific suggestions
+        if ($this->filePath) {
+            $this->analyzeFile($this->filePath);
+        }
+    }
+
+    public function updateMapping(int $columnIndex, ?string $field): void
+    {
+        if ($field) {
+            $this->columnMappings[$columnIndex] = $field;
+        } else {
+            unset($this->columnMappings[$columnIndex]);
+        }
+    }
+
+    public function getMappings(): array
+    {
+        return $this->columnMappings;
+    }
+}
+
+// Routes for templates and mapping
+// Add to routes/web.php
+
+Route::middleware(['auth', 'role:super_admin,admin'])->prefix('admin')->group(function () {
+    Route::get('/import/templates', [App\Http\Controllers\Admin\TemplateController::class, 'index']);
+    Route::get('/import/templates/{type}/preview', [App\Http\Controllers\Admin\TemplateController::class, 'preview']);
+    Route::get('/import/templates/{type}/download', [App\Http\Controllers\Admin\TemplateController::class, 'download']);
+});
+
+// Service Provider Registration
+// Add to AppServiceProvider.php
+
+public function register()
+{
+    $this->app->singleton(ImportManager::class);
+    $this->app->singleton(CsvTemplateGenerator::class);
+    $this->app->singleton(ImportMappingService::class);
+}
+
+// Queue Job for Large Imports
+namespace App\Jobs;
+
+use App\Models\ImportJob;
+use App\Services\Import\ImportManager;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Storage;
+
+class ProcessImportJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    protected ImportJob $importJob;
+
+    public function __construct(ImportJob $importJob)
+    {
+        $this->importJob = $importJob;
+    }
+
+    public function handle(ImportManager $importManager): void
+    {
+        try {
+            $this->importJob->update([
+                'status' => 'processing',
+                'started_at' => now()
+            ]);
+
+            $filePath = Storage::disk('local')->path($this->importJob->file_path);
+            
+            $stats = $importManager->import(
+                $this->importJob->type,
+                $filePath,
+                $this->importJob->options ?? []
+            );
+
+            $this->importJob->update([
+                'status' => 'completed',
+                'stats' => $stats,
+                'completed_at' => now()
+            ]);
+
+            // Send notification to user
+            $this->importJob->user->notify(new ImportCompletedNotification($this->importJob));
+
+        } catch (\Exception $e) {
+            $this->importJob->update([
+                'status' => 'failed',
+                'stats' => ['error' => $e->getMessage()],
+                'completed_at' => now()
+            ]);
+
+            // Send error notification
+            $this->importJob->user->notify(new ImportFailedNotification($this->importJob, $e));
+        }
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        $this->importJob->update([
+            'status' => 'failed',
+            'stats' => ['error' => $exception->getMessage()],
+            'completed_at' => now()
+        ]);
+    }
+}
+
+// Notifications
+namespace App\Notifications;
+
+use App\Models\ImportJob;
+use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
+
+class ImportCompletedNotification extends Notification
+{
+    use Queueable;
+
+    protected ImportJob $importJob;
+
+    public function __construct(ImportJob $importJob)
+    {
+        $this->importJob = $importJob;
+    }
+
+    public function via($notifiable): array
+    {
+        return ['mail', 'database'];
+    }
+
+    public function toMail($notifiable): MailMessage
+    {
+        $stats = $this->importJob->stats;
+        
+        return (new MailMessage)
+            ->subject('Import Completed - ' . ucfirst($this->importJob->type))
+            ->greeting('Hello!')
+            ->line("Your {$this->importJob->type} import has been completed successfully.")
+            ->line("File: {$this->importJob->filename}")
+            ->line("Processed: {$stats['processed_rows']} rows")
+            ->line("Successful: {$stats['successful_imports']}")
+            ->line("Failed: {$stats['failed_imports']}")
+            ->action('View Import Details', url("/admin/import-jobs/{$this->importJob->id}"))
+            ->line('Thank you for using our application!');
+    }
+
+    public function toArray($notifiable): array
+    {
+        return [
+            'import_job_id' => $this->importJob->id,
+            'type' => $this->importJob->type,
+            'filename' => $this->importJob->filename,
+            'stats' => $this->importJob->stats,
+        ];
+    }
+}
+
+class ImportFailedNotification extends Notification
+{
+    use Queueable;
+
+    protected ImportJob $importJob;
+    protected \Throwable $exception;
+
+    public function __construct(ImportJob $importJob, \Throwable $exception)
+    {
+        $this->importJob = $importJob;
+        $this->exception = $exception;
+    }
+
+    public function via($notifiable): array
+    {
+        return ['mail', 'database'];
+    }
+
+    public function toMail($notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('Import Failed - ' . ucfirst($this->importJob->type))
+            ->greeting('Hello!')
+            ->line("Your {$this->importJob->type} import has failed.")
+            ->line("File: {$this->importJob->filename}")
+            ->line("Error: {$this->exception->getMessage()}")
+            ->action('View Import Details', url("/admin/import-jobs/{$this->importJob->id}"))
+            ->line('Please check the file format and try again.');
+    }
+
+    public function toArray($notifiable): array
+    {
+        return [
+            'import_job_id' => $this->importJob->id,
+            'type' => $this->importJob->type,
+            'filename' => $this->importJob->filename,
+            'error' => $this->exception->getMessage(),
+        ];
+    }
+}
+
+// Usage Examples and Documentation
+
+/**
+ * USAGE EXAMPLES:
+ * 
+ * 1. CLI Import:
+ * php artisan import:data communities storage/app/communities.csv --save-job
+ * php artisan import:data apartments storage/app/apartments.csv --community-id=1
+ * 
+ * 2. Programmatic Import:
+ * $importManager = app(ImportManager::class);
+ * $stats = $importManager->import('communities', '/path/to/file.csv', [
+ *     'delimiter' => ';',
+ *     'encoding' => 'ISO-8859-2'
+ * ]);
+ * 
+ * 3. Download Templates:
+ * $templateGenerator = app(CsvTemplateGenerator::class);
+ * return $templateGenerator->downloadTemplate('apartments', true);
+ * 
+ * 4. Custom Importer:
+ * class CustomImporter extends CsvImporter {
+ *     protected function getColumnMapping(): array {
+ *         return ['csv_column' => 'model_field'];
+ *     }
+ *     // ... implement other methods
+ * }
+ * 
+ * $importManager->registerImporter('custom_type', CustomImporter::class);
+ * 
+ * 5. Queue Large Import:
+ * ProcessImportJob::dispatch($importJob);
+ */
