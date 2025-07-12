@@ -17,70 +17,98 @@ class PersonResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?string $navigationGroup = 'Zarządzanie';
-
     protected static ?int $navigationSort = 3;
+
+    // Hide the resource name from breadcrumbs
+    protected static bool $shouldRegisterNavigation = true;
+    protected static ?string $breadcrumb = null;
+
+    public static function getNavigationGroup(): string
+    {
+        return __('app.groups.management');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.navigation.people');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.people.singular');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('app.people.plural');
+    }
+
+    // Hide breadcrumb by overriding the title
+    public static function getBreadcrumb(): string
+    {
+        return '';
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Dane osobowe')
+                Forms\Components\Section::make(__('app.sections.basic_information'))
                     ->schema([
                         Forms\Components\TextInput::make('first_name')
-                            ->label('Imię')
+                            ->label(__('app.people.first_name'))
                             ->required()
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('last_name')
-                            ->label('Nazwisko')
+                            ->label(__('app.people.last_name'))
                             ->required()
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('email')
-                            ->label('Email')
+                            ->label(__('app.people.email'))
                             ->email()
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('phone')
-                            ->label('Telefon')
+                            ->label(__('app.people.phone'))
                             ->tel()
                             ->maxLength(20),
 
                         Forms\Components\Select::make('spouse_id')
-                            ->label('Małżonek')
+                            ->label(__('app.people.spouse'))
                             ->options(Person::all()->pluck('full_name', 'id'))
                             ->searchable(),
 
                         Forms\Components\Toggle::make('is_active')
-                            ->label('Aktywny')
+                            ->label(__('app.people.is_active'))
                             ->default(true),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Adres korespondencyjny')
+                Forms\Components\Section::make(__('app.sections.address'))
                     ->schema([
                         Forms\Components\TextInput::make('correspondence_address_street')
-                            ->label('Ulica')
+                            ->label(__('app.people.correspondence_address_street'))
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('correspondence_address_postal_code')
-                            ->label('Kod pocztowy')
+                            ->label(__('app.people.correspondence_address_postal_code'))
                             ->maxLength(10),
 
                         Forms\Components\TextInput::make('correspondence_address_city')
-                            ->label('Miasto')
+                            ->label(__('app.people.correspondence_address_city'))
                             ->maxLength(255),
                     ])->columns(3),
 
-                Forms\Components\Section::make('Dodatkowe informacje')
+                Forms\Components\Section::make(__('app.sections.additional'))
                     ->schema([
                         Forms\Components\TextInput::make('ownership_share')
-                            ->label('Udział własnościowy (%)')
+                            ->label(__('app.people.ownership_share'))
                             ->numeric()
                             ->step(0.01),
 
                         Forms\Components\Textarea::make('notes')
-                            ->label('Notatki')
+                            ->label(__('app.people.notes'))
                             ->rows(3),
                     ])->columns(1),
             ]);
@@ -91,63 +119,72 @@ class PersonResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('full_name')
-                    ->label('Imię i nazwisko')
+                    ->label(__('app.people.full_name'))
                     ->searchable(['first_name', 'last_name'])
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('email')
-                    ->label('Email')
+                    ->label(__('app.people.email'))
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('phone')
-                    ->label('Telefon')
+                    ->label(__('app.people.phone'))
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('full_address')
-                    ->label('Adres')
+                    ->label(__('app.people.full_address'))
                     ->searchable(['correspondence_address_street', 'correspondence_address_city'])
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('ownership_share')
-                    ->label('Udział (%)')
+                    ->label(__('app.people.ownership_share'))
                     ->numeric(decimalPlaces: 2)
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('spouse.full_name')
-                    ->label('Małżonek')
+                    ->label(__('app.people.spouse'))
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\IconColumn::make('is_active')
-                    ->label('Aktywny')
+                    ->label(__('app.people.is_active'))
                     ->boolean(),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Utworzono')
+                    ->label(__('app.common.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->headerActions([
-                \App\Filament\Actions\ImportAction::downloadTemplate('people', 'Osoby'),
-                \App\Filament\Actions\ImportAction::make('people', 'Importuj osoby'),
+                // Move Create action to header
+                Tables\Actions\CreateAction::make()
+                    ->label(__('app.common.create') . ' ' . __('app.people.singular'))
+                    ->icon('heroicon-o-plus')
+                    ->color('success'),
+
+                \App\Filament\Actions\ImportAction::downloadTemplate('people', __('app.people.plural')),
+                \App\Filament\Actions\ImportAction::make('people', __('Importuj osoby')),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Aktywny'),
+                    ->label(__('app.filters.active')),
 
                 Tables\Filters\Filter::make('has_ownership_share')
-                    ->label('Ma udział własnościowy')
+                    ->label(__('Ma udział własnościowy'))
                     ->query(fn (Builder $query): Builder => $query->whereNotNull('ownership_share')),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label(__('app.common.view')),
+                Tables\Actions\EditAction::make()
+                    ->label(__('app.common.edit')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label(__('app.common.delete')),
                 ]),
             ])
             ->defaultSort('last_name', 'asc');

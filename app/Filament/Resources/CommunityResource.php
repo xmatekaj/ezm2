@@ -18,119 +18,138 @@ class CommunityResource extends Resource
 {
     protected static ?string $model = Community::class;
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
-    protected static ?string $navigationGroup = 'Zarządzanie';
     protected static ?int $navigationSort = 1;
+
+    public static function getNavigationGroup(): string
+    {
+        return __('app.groups.management');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.navigation.communities');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.communities.singular');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('app.communities.plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Podstawowe informacje')
+                Forms\Components\Section::make(__('app.sections.basic_information'))
                     ->schema([
                         Forms\Components\TextInput::make('name')
-                            ->label('Nazwa')
+                            ->label(__('app.communities.name'))
                             ->required()
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('full_name')
-                            ->label('Pełna nazwa')
+                            ->label(__('app.communities.full_name'))
                             ->required()
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('short_full_name')
-                            ->label('Skrócona pełna nazwa')
+                            ->label(__('app.communities.short_full_name'))
                             ->maxLength(255),
 
                         Forms\Components\Toggle::make('is_active')
-                            ->label('Aktywna')
+                            ->label(__('app.communities.is_active'))
                             ->default(true),
 
                         Forms\Components\ColorPicker::make('color')
-                            ->label('Kolor')
+                            ->label(__('app.communities.color'))
                             ->default('#3b82f6'),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Adres')
+                Forms\Components\Section::make(__('app.sections.address'))
                     ->schema([
                         Forms\Components\TextInput::make('address_street')
-                            ->label('Ulica')
+                            ->label(__('app.communities.address_street'))
                             ->required()
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('address_postal_code')
-                            ->label('Kod pocztowy')
+                            ->label(__('app.communities.address_postal_code'))
                             ->required()
                             ->maxLength(10),
 
                         Forms\Components\TextInput::make('address_city')
-                            ->label('Miasto')
+                            ->label(__('app.communities.address_city'))
                             ->required()
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('address_state')
-                            ->label('Województwo')
+                            ->label(__('app.communities.address_state'))
                             ->maxLength(255),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Identyfikatory')
+                Forms\Components\Section::make(__('app.sections.identifiers'))
                     ->schema([
                         Forms\Components\TextInput::make('regon')
-                            ->label('REGON')
+                            ->label(__('app.communities.regon'))
                             ->maxLength(14),
 
                         Forms\Components\TextInput::make('tax_id')
-                            ->label('NIP')
+                            ->label(__('app.communities.tax_id'))
                             ->maxLength(13),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Zarządca')
+                Forms\Components\Section::make(__('app.sections.manager'))
                     ->schema([
                         Forms\Components\TextInput::make('manager_name')
-                            ->label('Nazwa zarządcy')
+                            ->label(__('app.communities.manager_name'))
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('manager_address_street')
-                            ->label('Ulica zarządcy')
+                            ->label(__('app.communities.manager_address_street'))
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('manager_address_postal_code')
-                            ->label('Kod pocztowy zarządcy')
+                            ->label(__('app.communities.manager_address_postal_code'))
                             ->maxLength(10),
 
                         Forms\Components\TextInput::make('manager_address_city')
-                            ->label('Miasto zarządcy')
+                            ->label(__('app.communities.manager_address_city'))
                             ->maxLength(255),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Parametry techniczne')
+                Forms\Components\Section::make(__('app.sections.technical_parameters'))
                     ->schema([
                         Forms\Components\TextInput::make('common_area_size')
-                            ->label('Powierzchnia części wspólnych (m²)')
+                            ->label(__('app.communities.common_area_size'))
                             ->numeric()
                             ->step(0.01),
 
                         Forms\Components\TextInput::make('apartments_area')
-                            ->label('Powierzchnia mieszkań (m²)')
+                            ->label(__('app.communities.apartments_area'))
                             ->numeric()
                             ->step(0.01),
 
                         Forms\Components\TextInput::make('apartment_count')
-                            ->label('Liczba mieszkań')
+                            ->label(__('app.communities.apartment_count'))
                             ->numeric(),
 
                         Forms\Components\TextInput::make('staircase_count')
-                            ->label('Liczba klatek')
+                            ->label(__('app.communities.staircase_count'))
                             ->numeric(),
 
                         Forms\Components\Toggle::make('has_elevator')
-                            ->label('Winda'),
+                            ->label(__('app.communities.has_elevator')),
 
                         Forms\Components\TextInput::make('residential_water_meters')
-                            ->label('Mieszkaniowe wodomierze')
+                            ->label(__('app.communities.residential_water_meters'))
                             ->numeric(),
 
                         Forms\Components\TextInput::make('main_water_meters')
-                            ->label('Główne wodomierze')
+                            ->label(__('app.communities.main_water_meters'))
                             ->numeric(),
                     ])->columns(3),
             ]);
@@ -141,52 +160,55 @@ class CommunityResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nazwa')
+                    ->label(__('app.communities.name'))
                     ->searchable()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('full_address')
-                    ->label('Adres')
+                    ->label(__('app.communities.full_address'))
                     ->searchable(['address_street', 'address_city']),
 
                 Tables\Columns\TextColumn::make('apartment_count')
-                    ->label('Mieszkania')
+                    ->label(__('app.communities.apartment_count'))
                     ->numeric()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('manager_name')
-                    ->label('Zarządca')
+                    ->label(__('app.communities.manager_name'))
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\IconColumn::make('is_active')
-                    ->label('Aktywna')
+                    ->label(__('app.communities.is_active'))
                     ->boolean(),
 
                 Tables\Columns\ColorColumn::make('color')
-                    ->label('Kolor'),
+                    ->label(__('app.communities.color')),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Utworzono')
+                    ->label(__('app.common.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Aktywna'),
+                    ->label(__('app.filters.active')),
             ])
             ->headerActions([
-                \App\Filament\Actions\ImportAction::downloadTemplate('communities', 'Wspólnoty'),
-                \App\Filament\Actions\ImportAction::make('communities', 'Importuj wspólnoty'),
+                \App\Filament\Actions\ImportAction::downloadTemplate('communities', __('app.communities.plural')),
+                \App\Filament\Actions\ImportAction::make('communities', __('Importuj wspólnoty')),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label(__('app.common.view')),
+                Tables\Actions\EditAction::make()
+                    ->label(__('app.common.edit')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label(__('app.common.delete')),
                 ]),
             ]);
     }

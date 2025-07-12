@@ -70,4 +70,27 @@ class Apartment extends Model
             ? "{$this->building_number}/{$this->apartment_number}"
             : $this->apartment_number;
     }
+
+    public function getTypeDisplayAttribute(): string
+    {
+        return ApartmentType::from($this->apartment_type)->label();
+    }
+
+    public function isResidential(): bool
+    {
+        return $this->apartment_type === ApartmentType::RESIDENTIAL->value;
+    }
+
+    public function isCommercial(): bool
+    {
+        return in_array($this->apartment_type, [
+            ApartmentType::COMMERCIAL->value,
+            ApartmentType::MIXED->value
+        ]);
+    }
+
+    public function isStorage(): bool
+    {
+        return $this->apartment_type === ApartmentType::STORAGE->value;
+    }
 }

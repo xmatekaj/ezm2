@@ -68,4 +68,8 @@ class Person extends Model
     {
         return $this->apartments()->wherePivot('is_primary', true)->first();
     }
+    public function getTitle(): string
+    {
+        return __('app.action_titles.edit.person');
+    }
 }

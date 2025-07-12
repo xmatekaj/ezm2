@@ -18,85 +18,105 @@ class ApartmentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-home';
 
-    protected static ?string $navigationGroup = 'Zarządzanie';
+    //protected static ?string $navigationGroup = 'Zarządzanie';
 
     protected static ?int $navigationSort = 2;
+
+    public static function getNavigationGroup(): string
+    {
+        return __('app.groups.management');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('app.navigation.apartments');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('app.apartments.singular');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('app.apartments.plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Podstawowe informacje')
+                Forms\Components\Section::make(__('app.sections.basic_information'))
                     ->schema([
                         Forms\Components\Select::make('community_id')
-                            ->label('Wspólnota')
+                            ->label(__('app.common.community'))
                             ->options(Community::all()->pluck('name', 'id'))
                             ->required()
                             ->searchable(),
 
                         Forms\Components\TextInput::make('building_number')
-                            ->label('Numer budynku')
+                            ->label(__('app.apartments.building_number'))
                             ->maxLength(10),
 
                         Forms\Components\TextInput::make('apartment_number')
-                            ->label('Numer mieszkania')
+                            ->label(__('app.apartments.apartment_number'))
                             ->required()
                             ->maxLength(10),
 
                         Forms\Components\TextInput::make('floor')
-                            ->label('Piętro')
+                            ->label(__('app.apartments.floor'))
                             ->numeric(),
 
                         Forms\Components\Toggle::make('is_owned')
-                            ->label('Własnościowe')
+                            ->label(__('app.apartments.is_owned'))
                             ->default(true),
 
                         Forms\Components\Toggle::make('is_commercial')
-                            ->label('Komercyjne')
+                            ->label(__('app.apartments.is_commercial'))
                             ->default(false),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Powierzchnie')
+                Forms\Components\Section::make(__('app.sections.surfaces'))
                     ->schema([
                         Forms\Components\TextInput::make('area')
-                            ->label('Powierzchnia (m²)')
+                            ->label(__('app.apartments.area'))
                             ->numeric()
                             ->step(0.01)
                             ->required(),
 
                         Forms\Components\TextInput::make('heated_area')
-                            ->label('Powierzchnia ogrzewana (m²)')
+                            ->label(__('app.apartments.heated_area'))
                             ->numeric()
                             ->step(0.01),
 
                         Forms\Components\TextInput::make('basement_area')
-                            ->label('Powierzchnia piwnicy (m²)')
+                            ->label(__('app.apartments.basement_area'))
                             ->numeric()
                             ->step(0.01),
 
                         Forms\Components\TextInput::make('storage_area')
-                            ->label('Powierzchnia komórki (m²)')
+                            ->label(__('app.apartments.storage_area'))
                             ->numeric()
                             ->step(0.01),
 
                         Forms\Components\TextInput::make('common_area_share')
-                            ->label('Udział w częściach wspólnych (%)')
+                            ->label(__('app.apartments.common_area_share'))
                             ->numeric()
                             ->step(0.01),
 
                         Forms\Components\TextInput::make('elevator_fee_coefficient')
-                            ->label('Współczynnik opłaty windowej')
+                            ->label(__('app.apartments.elevator_fee_coefficient'))
                             ->numeric()
                             ->step(0.01),
                     ])->columns(3),
 
-                Forms\Components\Section::make('Dodatkowe')
+                Forms\Components\Section::make(__('app.sections.additional'))
                     ->schema([
                         Forms\Components\Toggle::make('has_basement')
-                            ->label('Posiada piwnicę'),
+                            ->label(__('app.apartments.has_basement')),
 
                         Forms\Components\Toggle::make('has_storage')
-                            ->label('Posiada komórkę'),
+                            ->label(__('app.apartments.has_storage')),
                     ])->columns(2),
             ]);
     }
@@ -106,82 +126,85 @@ class ApartmentResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('community.name')
-                    ->label('Wspólnota')
+                    ->label(__('app.common.community'))
                     ->searchable()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('full_number')
-                    ->label('Numer')
+                    ->label(__('app.apartments.full_number'))
                     ->searchable(['building_number', 'apartment_number'])
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('floor')
-                    ->label('Piętro')
+                    ->label(__('app.apartments.floor'))
                     ->numeric()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('area')
-                    ->label('Powierzchnia (m²)')
+                    ->label(__('app.apartments.area'))
                     ->numeric(decimalPlaces: 2)
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('common_area_share')
-                    ->label('Udział (%)')
+                    ->label(__('app.apartments.common_area_share'))
                     ->numeric(decimalPlaces: 2)
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_owned')
-                    ->label('Własnościowe')
+                    ->label(__('app.apartments.is_owned'))
                     ->boolean(),
 
                 Tables\Columns\IconColumn::make('is_commercial')
-                    ->label('Komercyjne')
+                    ->label(__('app.apartments.is_commercial'))
                     ->boolean(),
 
                 Tables\Columns\IconColumn::make('has_basement')
-                    ->label('Piwnica')
+                    ->label(__('app.apartments.has_basement'))
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\IconColumn::make('has_storage')
-                    ->label('Komórka')
+                    ->label(__('app.apartments.has_storage'))
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Utworzono')
+                    ->label(__('app.common.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->headerActions([
-                \App\Filament\Actions\ImportAction::downloadTemplate('apartments', 'Mieszkania'),
-                \App\Filament\Actions\ImportAction::make('apartments', 'Importuj mieszkania'),
+                \App\Filament\Actions\ImportAction::downloadTemplate('apartments', __('app.apartments.plural')),
+                \App\Filament\Actions\ImportAction::make('apartments', __('Importuj lokale')),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('community_id')
-                    ->label('Wspólnota')
+                    ->label(__('app.common.community'))
                     ->options(Community::all()->pluck('name', 'id')),
 
                 Tables\Filters\TernaryFilter::make('is_owned')
-                    ->label('Własnościowe'),
+                    ->label(__('app.filters.owned')),
 
                 Tables\Filters\TernaryFilter::make('is_commercial')
-                    ->label('Komercyjne'),
+                    ->label(__('app.filters.commercial')),
 
                 Tables\Filters\TernaryFilter::make('has_basement')
-                    ->label('Z piwnicą'),
+                    ->label(__('app.filters.with_basement')),
 
                 Tables\Filters\TernaryFilter::make('has_storage')
-                    ->label('Z komórką'),
+                    ->label(__('app.filters.with_storage')),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->label(__('app.common.view')),
+                Tables\Actions\EditAction::make()
+                    ->label(__('app.common.edit')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label(__('app.common.delete')),
                 ]),
             ])
             ->defaultSort('community.name', 'asc');
