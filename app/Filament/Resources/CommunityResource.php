@@ -196,8 +196,6 @@ class CommunityResource extends Resource
                     ->label(__('app.filters.active')),
             ])
             ->headerActions([
-                \App\Filament\Actions\ImportAction::downloadTemplate('communities', __('app.communities.plural')),
-                \App\Filament\Actions\ImportAction::make('communities', __('Importuj wspólnoty')),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()

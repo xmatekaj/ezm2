@@ -158,14 +158,7 @@ class PersonResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->headerActions([
-                // Move Create action to header
-                Tables\Actions\CreateAction::make()
-                    ->label(__('app.common.create') . ' ' . __('app.people.singular'))
-                    ->icon('heroicon-o-plus')
-                    ->color('success'),
 
-                \App\Filament\Actions\ImportAction::downloadTemplate('people', __('app.people.plural')),
-                \App\Filament\Actions\ImportAction::make('people', __('Importuj osoby')),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_active')

@@ -255,6 +255,10 @@ return [
 		'error' => 'Błąd',
 		'success' => 'Sukces',
 		'info' => 'Informacja',
+		'download_csv_template' => 'Pobierz szablon CSV',
+		'csv_file' => 'Plik CSV',
+		'import_function' => 'Import funkcja',
+		'import_will_be_implemented_soon' => 'Import będzie zaimplementowany wkrótce',
 	],
 
     'filters' => [

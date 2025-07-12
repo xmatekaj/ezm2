@@ -12,7 +12,7 @@ class CreatePerson extends CreateRecord
 
     public function getTitle(): string
     {
-        return __('app.common.create') . ' ' . __('app.people.singular_accusative');
+        return __('app.action_titles.create.person');
     }
 
     // Remove breadcrumbs
@@ -31,7 +31,7 @@ class CreatePerson extends CreateRecord
     protected function getFormActions(): array
     {
         return [
-            $this->getCreateAction(),
+            $this->getCreateFormAction(),
             $this->getCancelAction(),
         ];
     }

@@ -175,8 +175,6 @@ class ApartmentResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->headerActions([
-                \App\Filament\Actions\ImportAction::downloadTemplate('apartments', __('app.apartments.plural')),
-                \App\Filament\Actions\ImportAction::make('apartments', __('Importuj lokale')),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('community_id')
