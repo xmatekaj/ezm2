@@ -30,6 +30,44 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->renderHook('panels::head.start', fn () => new \Illuminate\Support\HtmlString('
+                <style>
+                /* Target all possible container classes */
+                .fi-ta,
+                .fi-ta-ctn,
+                .fi-main-ctn,
+                .fi-body,
+                .fi-page,
+                .fi-section-content,
+                .filament-tables-container,
+                .filament-table-container,
+                [data-filament-table-container],
+                .max-w-7xl,
+                .max-w-screen-xl,
+                .container {
+                    width: 100% !important;
+                    max-width: none !important;
+                }
+
+                /* Ensure table uses full width */
+                .fi-ta-table,
+                .filament-table,
+                table {
+                    width: 100% !important;
+                    min-width: 100% !important;
+                }
+
+                /* Remove any flex constraints */
+                .fi-main {
+                    max-width: none !important;
+                }
+
+                /* Target the page content wrapper */
+                .fi-page-content {
+                    max-width: none !important;
+                }
+            </style>
+            '))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -54,5 +92,6 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+
     }
 }

@@ -1,0 +1,24 @@
+.fi-ta {
+    width: 100% !important;
+    max-width: none !important;
+}
+
+.fi-ta-ctn {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+/* Make the main content area use full width */
+.fi-main-ctn {
+    max-width: none !important;
+}
+
+/* Remove container width limits */
+.fi-body {
+    max-width: none !important;
+}
+
+/* Ensure table doesn't have horizontal scroll */
+.fi-ta-table {
+    min-width: 100% !important;
+}
