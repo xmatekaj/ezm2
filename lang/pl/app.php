@@ -6,16 +6,20 @@ return [
 			'person' => 'Podgląd osoby',
 			'community' => 'Podgląd wspólnoty',
 			'apartment' => 'Podgląd lokalu',
+            'water_meter' => 'Podgląd wodomierza',
+
 		],
 		'edit' => [
 			'person' => 'Edycja osoby',
-			'community' => 'Edycja wspólnoty', 
+			'community' => 'Edycja wspólnoty',
 			'apartment' => 'Edycja lokalu',
+            'water_meter' => 'Edycja wodomierza',
 		],
 		'create' => [
 			'person' => 'Utwórz osobę',
 			'community' => 'Utwórz wspólnotę',
 			'apartment' => 'Utwórz lokal',
+            'water_meter' => 'Utwórz wodomierz',
 		],
 	],
     'navigation' => [
@@ -210,7 +214,7 @@ return [
 
     'common' => [
 		'community' => 'Wspólnota',
-		'apartment' => 'Lokal', 
+		'apartment' => 'Lokal',
 		'person' => 'Osoba',
 		'created_at' => 'Utworzono',
 		'updated_at' => 'Zaktualizowano',

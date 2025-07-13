@@ -125,8 +125,6 @@ class WaterMeterResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->headerActions([
-                \App\Filament\Actions\ImportAction::downloadTemplate('water_meters', 'Wodomierze'),
-                \App\Filament\Actions\ImportAction::make('water_meters', 'Importuj wodomierze'),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('is_active')

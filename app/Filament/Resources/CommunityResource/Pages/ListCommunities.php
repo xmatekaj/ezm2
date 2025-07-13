@@ -25,7 +25,7 @@ class ListCommunities extends ListRecords
                 ->color('info')
                 ->action(function () {
                     $content = "name,full_name,address_street,address_postal_code,address_city,address_state,regon,tax_id,manager_name,manager_address_street,manager_address_postal_code,manager_address_city,common_area_size,apartments_area,apartment_count,has_elevator\n" .
-                              "\"WM Słoneczna\",\"Wspólnota Mieszkaniowa przy ul. Słonecznej\",\"ul. Słoneczna 15\",\"40-001\",\"Katowice\",\"śląskie\",\"123456789\",\"1234567890\",\"Zarządca ABC Sp. z o.o.\",\"ul. Zarządu 1\",\"40-002\",\"Katowice\",\"250.50\",\"1500.75\",\"24\",\"tak\"";
+                              "\"WMN Słoneczna\",\"Wspólnota Mieszkaniowa Nieruchomości przy ul. Słonecznej\",\"ul. Słoneczna 15\",\"40-001\",\"Katowice\",\"śląskie\",\"123456789\",\"1234567890\",\"Zarządca ABC Sp. z o.o.\",\"ul. Zarządu 1\",\"40-002\",\"Katowice\",\"250.50\",\"1500.75\",\"24\",\"tak\"";
 
                     $filename = "template_communities_" . date('Y-m-d') . '.csv';
 
