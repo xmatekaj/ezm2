@@ -216,5 +216,11 @@ return [
 		'error' => 'Błąd',
 		'warning' => 'Ostrzeżenie',
 		'info' => 'Informacja',
+        'import' => 'Importuj',
+		'download' => 'Pobierz',
+        'download_csv_template' => 'Pobierz szablon CSV',
+		'csv_file' => 'Plik CSV',
+		'import_function' => 'Import funkcja',
+		'import_will_be_implemented_soon' => 'Import będzie zaimplementowany wkrótce',
 	],
 ];
