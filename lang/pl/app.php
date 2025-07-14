@@ -35,6 +35,8 @@ return [
         'occupancy' => 'Zaludnienie',
         'import_jobs' => 'Import danych',
         'settings' => 'Ustawienia',
+        'users' => 'Użytkownicy',
+
     ],
 
     'groups' => [

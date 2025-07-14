@@ -30,34 +30,13 @@ class SettingsResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Dane zarządcy')
-                    ->description('Konfiguracja danych zarządcy używanych w całej aplikacji')
-                    ->schema([
-                        Forms\Components\TextInput::make('manager_name')
-                            ->label('Nazwa zarządcy')
-                            ->required()
-                            ->maxLength(255)
-                            ->default(fn () => Setting::get('manager_name', '')),
-
-                        Forms\Components\TextInput::make('manager_address_street')
-                            ->label('Ulica zarządcy')
-                            ->required()
-                            ->maxLength(255)
-                            ->default(fn () => Setting::get('manager_address_street', '')),
-
-                        Forms\Components\TextInput::make('manager_address_postal_code')
-                            ->label('Kod pocztowy zarządcy')
-                            ->required()
-                            ->maxLength(10)
-                            ->placeholder('00-000')
-                            ->default(fn () => Setting::get('manager_address_postal_code', '')),
-
-                        Forms\Components\TextInput::make('manager_address_city')
-                            ->label('Miasto zarządcy')
-                            ->required()
-                            ->maxLength(255)
-                            ->default(fn () => Setting::get('manager_address_city', '')),
-                    ])->columns(2),
+                // This form won't be used since we're using a custom page
+                Forms\Components\TextInput::make('key')
+                    ->label('Klucz')
+                    ->disabled(),
+                    
+                Forms\Components\TextInput::make('value')
+                    ->label('Wartość'),
             ]);
     }
 
@@ -65,25 +44,34 @@ class SettingsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('key')
-                    ->label('Klucz')
-                    ->searchable()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('category_label')
+                    ->label('Kategoria')
+                    ->searchable(['category'])
+                    ->sortable(['category'])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Zarządca' => 'primary',
+                        'Aplikacja' => 'success',
+                        'Powiadomienia' => 'warning',
+                        'Finanse' => 'info',
+                        'System' => 'gray',
+                        default => 'gray',
+                    }),
+
+                Tables\Columns\TextColumn::make('friendly_label')
+                    ->label('Nazwa')
+                    ->searchable(['label', 'key'])
+                    ->sortable(['label']),
 
                 Tables\Columns\TextColumn::make('value')
                     ->label('Wartość')
                     ->limit(50)
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('type')
-                    ->label('Typ')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'string' => 'gray',
-                        'boolean' => 'success',
-                        'integer' => 'info',
-                        'json' => 'warning',
-                        default => 'gray',
+                    ->searchable()
+                    ->formatStateUsing(function ($state, $record) {
+                        if ($record->type === 'boolean') {
+                            return $state === 'true' ? 'Tak' : 'Nie';
+                        }
+                        return $state ?: '-';
                     }),
 
                 Tables\Columns\TextColumn::make('updated_at')
@@ -92,23 +80,37 @@ class SettingsResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('type')
-                    ->label('Typ')
-                    ->options([
-                        'string' => 'String',
-                        'boolean' => 'Boolean',
-                        'integer' => 'Integer',
-                        'json' => 'JSON',
-                    ]),
+                Tables\Filters\SelectFilter::make('category')
+                    ->label('Kategoria')
+                    ->options(Setting::getCategories()),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->form([
+                        Forms\Components\TextInput::make('key')
+                            ->label('Klucz')
+                            ->disabled(),
+                            
+                        Forms\Components\TextInput::make('label')
+                            ->label('Nazwa')
+                            ->required(),
+                            
+                        Forms\Components\Select::make('type')
+                            ->label('Typ')
+                            ->options([
+                                'string' => 'Tekst',
+                                'boolean' => 'Tak/Nie',
+                                'integer' => 'Liczba',
+                                'json' => 'JSON',
+                            ])
+                            ->required(),
+                            
+                        Forms\Components\Textarea::make('value')
+                            ->label('Wartość')
+                            ->required(),
+                    ]),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->defaultSort('category');
     }
 
     public static function getRelations(): array
