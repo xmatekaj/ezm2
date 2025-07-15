@@ -98,7 +98,6 @@ return [
         'area' => 'Powierzchnia (m²)',
         'basement_area' => 'Powierzchnia piwnicy (m²)',
         'storage_area' => 'Powierzchnia komórki (m²)',
-        'heated_area' => 'Powierzchnia ogrzewana (m²)',
         'common_area_share' => 'Udział w częściach wspólnych (%)',
         'floor' => 'Piętro',
         'elevator_fee_coefficient' => 'Współczynnik opłaty windowej',
@@ -111,7 +110,12 @@ return [
             'residential' => 'Mieszkalny',
             'commercial' => 'Komercyjny',
             'mixed' => 'Mieszany'
-        ]
+        ],
+        'code' => 'Kod lokalu',
+        'intercom_code' => 'Kod domofonu',
+        'primary_owner' => 'Właściciel główny',
+        'basement_area_conditional' => 'Powierzchnia piwnicy (m²)',
+        'storage_area_conditional' => 'Powierzchnia komórki (m²)',
     ],
 
     'financial_transactions' => [

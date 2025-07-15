@@ -18,7 +18,6 @@ class Apartment extends Model
         'area',
         'basement_area',
         'storage_area',
-        'heated_area',
         'common_area_share',
         'floor',
         'elevator_fee_coefficient',
@@ -45,6 +44,11 @@ class Apartment extends Model
     public function community(): BelongsTo
     {
         return $this->belongsTo(Community::class);
+    }
+
+    public function getPrimaryOwnerAttribute(): ?Person
+    {
+        return $this->people()->wherePivot('is_primary', true)->first();
     }
 
     public function people(): BelongsToMany
