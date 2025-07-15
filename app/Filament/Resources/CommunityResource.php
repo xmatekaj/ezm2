@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CommunityResource\Pages;
 use App\Models\Community;
+use App\Models\TerritorialUnit;
 use App\Models\Street;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,8 +14,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Get;
-
-
+use Illuminate\Support\Facades\Http;
 
 class CommunityResource extends Resource
 {
@@ -66,57 +66,62 @@ class CommunityResource extends Resource
                             ->afterStateUpdated(fn (Forms\Set $set) => $set('address_city', null)),
 
                         Forms\Components\Select::make('address_city')
-                        ->label('Miasto')
-                        ->required()
-                        ->searchable()
-                        ->options(function (Get $get) {
-                            $state = $get('address_state');
-                            if (!$state) {
-                                return [];
-                            }
+                            ->label('Miasto')
+                            ->required()
+                            ->searchable()
+                            ->options(function (Get $get) {
+                                $state = $get('address_state');
+                                if (!$state) {
+                                    return [];
+                                }
 
-                            // Map voivodeship names to codes used in TerritorialUnit
-                            $voivodeshipMap = [
-                                'dolnośląskie' => '02',
-                                'kujawsko-pomorskie' => '04',
-                                'lubelskie' => '06',
-                                'lubuskie' => '08',
-                                'łódzkie' => '10',
-                                'małopolskie' => '12',
-                                'mazowieckie' => '14',
-                                'opolskie' => '16',
-                                'podkarpackie' => '18',
-                                'podlaskie' => '20',
-                                'pomorskie' => '22',
-                                'śląskie' => '24',
-                                'świętokrzyskie' => '26',
-                                'warmińsko-mazurskie' => '28',
-                                'wielkopolskie' => '30',
-                                'zachodniopomorskie' => '32',
-                            ];
+                                // Map voivodeship names to codes used in TerritorialUnit
+                                $voivodeshipMap = [
+                                    'dolnośląskie' => '02',
+                                    'kujawsko-pomorskie' => '04',
+                                    'lubelskie' => '06',
+                                    'lubuskie' => '08',
+                                    'łódzkie' => '10',
+                                    'małopolskie' => '12',
+                                    'mazowieckie' => '14',
+                                    'opolskie' => '16',
+                                    'podkarpackie' => '18',
+                                    'podlaskie' => '20',
+                                    'pomorskie' => '22',
+                                    'śląskie' => '24',
+                                    'świętokrzyskie' => '26',
+                                    'warmińsko-mazurskie' => '28',
+                                    'wielkopolskie' => '30',
+                                    'zachodniopomorskie' => '32',
+                                ];
 
-                            $voivodeshipCode = $voivodeshipMap[$state] ?? null;
-                            if (!$voivodeshipCode) {
-                                return [];
-                            }
+                                $voivodeshipCode = $voivodeshipMap[$state] ?? null;
+                                if (!$voivodeshipCode) {
+                                    return [];
+                                }
 
-                            // Use TerritorialUnit to get all cities for the voivodeship
-                            $cities = \App\Models\TerritorialUnit::getCitiesForVoivodeship($voivodeshipCode);
+                                try {
+                                    // Use TerritorialUnit to get all cities for the voivodeship
+                                    $cities = TerritorialUnit::getCitiesForVoivodeship($voivodeshipCode);
 
-                            return $cities->mapWithKeys(function ($city) {
-                                return [$city->nazwa => $city->nazwa];
-                            })->toArray();
-                        })
-                        ->live()
-                        ->afterStateUpdated(fn (Forms\Set $set) => $set('address_street', null))
-                        ->createOptionForm([
-                            Forms\Components\TextInput::make('city_name')
-                                ->label('Nazwa miasta')
-                                ->required(),
-                        ])
-                        ->createOptionUsing(function (array $data, Get $get) {
-                            return $data['city_name'];
-                        }),
+                                    return $cities->mapWithKeys(function ($city) {
+                                        return [$city->nazwa => $city->nazwa];
+                                    })->toArray();
+                                } catch (\Exception $e) {
+                                    \Illuminate\Support\Facades\Log::error('Failed to fetch cities: ' . $e->getMessage());
+                                    return [];
+                                }
+                            })
+                            ->live()
+                            ->afterStateUpdated(fn (Forms\Set $set) => $set('address_street', null))
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('city_name')
+                                    ->label('Nazwa miasta')
+                                    ->required(),
+                            ])
+                            ->createOptionUsing(function (array $data, Get $get) {
+                                return $data['city_name'];
+                            }),
 
                         Forms\Components\Select::make('address_street')
                             ->label('Ulica')
@@ -155,35 +160,28 @@ class CommunityResource extends Resource
                                     return [];
                                 }
 
-                                // Find the territorial unit to get the city code
-                                $territorialUnit = \App\Models\TerritorialUnit::where('woj', $voivodeshipCode)
-                                    ->where('nazwa', $city)
-                                    ->whereNotNull('pow')
-                                    ->whereNotNull('gmi')
-                                    ->first();
+                                try {
+                                    // Find the territorial unit to get the city code
+                                    $territorialUnit = TerritorialUnit::where('woj', $voivodeshipCode)
+                                        ->where('nazwa', $city)
+                                        ->whereNotNull('pow')
+                                        ->whereNotNull('gmi')
+                                        ->first();
 
-                                if (!$territorialUnit) {
+                                    if (!$territorialUnit) {
+                                        return [];
+                                    }
+
+                                    // Get streets for this territorial unit using the pow code
+                                    $streets = Street::getStreetsForCity($voivodeshipCode, $territorialUnit->pow);
+
+                                    return $streets->mapWithKeys(function ($street) {
+                                        return [$street->full_name => $street->full_name];
+                                    })->toArray();
+                                } catch (\Exception $e) {
+                                    \Illuminate\Support\Facades\Log::error('Failed to fetch streets: ' . $e->getMessage());
                                     return [];
                                 }
-
-                                try {
-                                    // Use the same API endpoint as registration form
-                                    $response = \Illuminate\Support\Facades\Http::get(
-                                        url("/api/streets/{$voivodeshipCode}/{$territorialUnit->pow}")
-                                    );
-
-                                    if ($response->successful()) {
-                                        $streets = $response->json();
-                                        return collect($streets)->mapWithKeys(function ($street) {
-                                            return [$street['full_name'] => $street['full_name']];
-                                        })->toArray();
-                                    }
-                                } catch (\Exception $e) {
-                                    // Fallback to empty array if API fails
-                                    \Illuminate\Support\Facades\Log::error('Failed to fetch streets: ' . $e->getMessage());
-                                }
-
-                                return [];
                             })
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('street_name')
@@ -205,10 +203,12 @@ class CommunityResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('regon')
                             ->label('REGON')
+                            ->required()
                             ->maxLength(9),
 
                         Forms\Components\TextInput::make('tax_id')
                             ->label('NIP')
+                            ->required()
                             ->maxLength(10),
                     ])->columns(2),
 
@@ -237,12 +237,12 @@ class CommunityResource extends Resource
                             ->default(false),
 
                         Forms\Components\TextInput::make('residential_water_meters')
-                            ->label('Wodomierze mieszkaniowe')
+                            ->label('Liczba wodomierzy mieszkaniowych')
                             ->numeric()
                             ->default(0),
 
                         Forms\Components\TextInput::make('main_water_meters')
-                            ->label('Wodomierze główne')
+                            ->label('Liczba wodomierzy głównych')
                             ->numeric()
                             ->default(0),
                     ])->columns(2),
@@ -255,11 +255,6 @@ class CommunityResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nazwa')
-                    ->searchable()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('full_name')
-                    ->label('Pełna nazwa')
                     ->searchable()
                     ->sortable(),
 
