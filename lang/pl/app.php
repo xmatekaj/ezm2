@@ -51,7 +51,7 @@ return [
         'plural' => 'Wspólnoty',
         'name' => 'Nazwa',
         'full_name' => 'Pełna nazwa',
-        'internal_code' => 'Wewnętrzny kod wspólnoty', // Changed from 'short_full_name'
+        'internal_code' => 'Wewnętrzny kod wspólnoty',
         'address_street' => 'Ulica',
         'address_postal_code' => 'Kod pocztowy',
         'address_city' => 'Miasto',
@@ -69,6 +69,14 @@ return [
         'is_active' => 'Aktywna',
         'color' => 'Kolor',
         'full_address' => 'Pełny adres',
+        'total_area' => 'Powierzchnia (m²)',
+        'basic_info_description' => 'Podstawowe informacje o wspólnocie mieszkaniowej',
+        'address_info_description' => 'Lokalizacja i adres wspólnoty',
+        'identifiers_description' => 'Identyfikatory prawne (opcjonalne)',
+        'technical_params_description' => 'Parametry techniczne budynku (opcjonalne)',
+        'regon_help' => 'REGON nie jest wymagany - można wprowadzić później',
+        'nip_help' => 'NIP nie jest wymagany - można wprowadzić później',
+
     ],
 
     'settings' => [
@@ -178,6 +186,11 @@ return [
         'fixed_fees' => 'Opłaty stałe (PLN)',
         'variable_fees' => 'Opłaty zmienne (PLN/m³)',
         'occupancy_change' => 'Zmiana zaludnienia',
+        'basic_information' => 'Podstawowe informacje',
+        'address' => 'Adres',
+        'identifiers' => 'Identyfikatory',
+        'technical_parameters' => 'Parametry techniczne',
+        'surfaces' => 'Powierzchnie',
     ],
 
     'common' => [
