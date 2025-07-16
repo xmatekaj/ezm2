@@ -49,126 +49,173 @@ class ApartmentResource extends Resource
     return $form
         ->schema([
             Forms\Components\Section::make(__('app.sections.basic_information'))
+                ->description(__('app.apartments.basic_info_description'))
+                ->icon('heroicon-o-information-circle')
                 ->schema([
-                    Forms\Components\Select::make('community_id')
-                        ->label(__('app.common.community'))
-                        ->options(Community::all()->pluck('name', 'id'))
-                        ->required()
-                        ->searchable()
-                        ->live(),
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\Select::make('community_id')
+                                ->label(__('app.common.community'))
+                                ->options(Community::all()->pluck('name', 'id'))
+                                ->required()
+                                ->searchable()
+                                ->live()
+                                ->prefixIcon('heroicon-o-building-office-2'),
 
-                    Forms\Components\TextInput::make('building_number')
-                        ->label(__('app.apartments.building_number'))
-                        ->maxLength(10),
+                            Forms\Components\TextInput::make('building_number')
+                                ->label(__('app.apartments.building_number'))
+                                ->maxLength(10)
+                                ->prefixIcon('heroicon-o-building-library'),
 
-                    Forms\Components\TextInput::make('apartment_number')
-                        ->label(__('app.apartments.apartment_number'))
-                        ->required()
-                        ->maxLength(10),
+                            Forms\Components\TextInput::make('apartment_number')
+                                ->label(__('app.apartments.apartment_number'))
+                                ->required()
+                                ->maxLength(10)
+                                ->prefixIcon('heroicon-o-home'),
 
-                    Forms\Components\TextInput::make('code')
-                        ->label(__('app.apartments.code'))
-                        ->maxLength(20)
-                        ->unique(ignoreRecord: true)
-                        ->helperText('Unikalny kod w ramach wspólnoty'),
+                            Forms\Components\TextInput::make('code')
+                                ->label(__('app.apartments.code'))
+                                ->maxLength(20)
+                                ->unique(ignoreRecord: true)
+                                ->helperText('Unikalny kod w ramach wspólnoty')
+                                ->prefixIcon('heroicon-o-tag'),
 
-                    Forms\Components\TextInput::make('intercom_code')
-                        ->label(__('app.apartments.intercom_code'))
-                        ->maxLength(50),
+                            Forms\Components\TextInput::make('intercom_code')
+                                ->label(__('app.apartments.intercom_code'))
+                                ->maxLength(50)
+                                ->prefixIcon('heroicon-o-phone'),
 
-                    Forms\Components\TextInput::make('floor')
-                        ->label(__('app.apartments.floor'))
-                        ->numeric(),
+                            Forms\Components\TextInput::make('floor')
+                                ->label(__('app.apartments.floor'))
+                                ->numeric()
+                                ->helperText('0 = Parter')
+                                ->prefixIcon('heroicon-o-building-office'),
 
-                    Forms\Components\Toggle::make('is_owned')
-                        ->label(__('app.apartments.is_owned'))
-                        ->default(true),
-
-                    Forms\Components\Toggle::make('is_commercial')
-                        ->label(__('app.apartments.is_commercial'))
-                        ->default(false),
-                ])->columns(2),
+                            Forms\Components\Toggle::make('is_commercial')
+                                ->label(__('app.apartments.is_commercial'))
+                                ->default(false)
+                                ->inline(false),
+                        ]),
+                ]),
 
             Forms\Components\Section::make(__('app.sections.surfaces'))
+                ->description(__('app.apartments.surfaces_description'))
+                ->icon('heroicon-o-square-3-stack-3d')
                 ->schema([
-                    Forms\Components\TextInput::make('area')
-                        ->label(__('app.apartments.area'))
-                        ->numeric()
-                        ->step(0.01)
-                        ->required(),
+                    Forms\Components\Grid::make(3)
+                        ->schema([
+                            Forms\Components\TextInput::make('area')
+                                ->label(__('app.apartments.area'))
+                                ->numeric()
+                                ->step(0.01)
+                                ->required()
+                                ->suffix('m²')
+                                ->prefixIcon('heroicon-o-home'),
 
-                    Forms\Components\TextInput::make('common_area_share')
-                        ->label(__('app.apartments.common_area_share'))
-                        ->numeric()
-                        ->step(0.01),
+                            Forms\Components\TextInput::make('common_area_share')
+                                ->label(__('app.apartments.common_area_share'))
+                                ->numeric()
+                                ->step(0.01)
+                                ->suffix('%')
+                                ->prefixIcon('heroicon-o-chart-pie'),
 
-                    Forms\Components\TextInput::make('elevator_fee_coefficient')
-                        ->label(__('app.apartments.elevator_fee_coefficient'))
-                        ->numeric()
-                        ->step(0.01)
-                        ->visible(function (Get $get) {
-                            $communityId = $get('community_id');
-                            return $communityId ? Community::find($communityId)?->has_elevator : true;
-                        })
-                        ->disabled(function (Get $get) {
-                            $communityId = $get('community_id');
-                            return $communityId ? !Community::find($communityId)?->has_elevator : false;
-                        })
-                        ->default(0),
-                ])->columns(2),
+                            Forms\Components\TextInput::make('elevator_fee_coefficient')
+                                ->label(__('app.apartments.elevator_fee_coefficient'))
+                                ->numeric()
+                                ->step(0.01)
+                                ->visible(function (Get $get) {
+                                    $communityId = $get('community_id');
+                                    return $communityId ? Community::find($communityId)?->has_elevator : true;
+                                })
+                                ->disabled(function (Get $get) {
+                                    $communityId = $get('community_id');
+                                    return $communityId ? !Community::find($communityId)?->has_elevator : false;
+                                })
+                                ->default(1.00)
+                                ->prefixIcon('heroicon-o-arrow-trending-up'),
+                        ]),
+                ]),
 
             Forms\Components\Section::make(__('app.sections.additional'))
+                ->description(__('app.apartments.additional_description'))
+                ->icon('heroicon-o-plus-circle')
                 ->schema([
-                    Forms\Components\Toggle::make('has_basement')
-                        ->label(__('app.apartments.has_basement'))
-                        ->default(false)
-                        ->live(),
+                    Forms\Components\Grid::make(2)
+                        ->schema([
+                            Forms\Components\Toggle::make('has_basement')
+                                ->label(__('app.apartments.has_basement'))
+                                ->default(false)
+                                ->live()
+                                ->inline(false),
 
-                    Forms\Components\TextInput::make('basement_area')
-                        ->label(__('app.apartments.basement_area_conditional'))
-                        ->numeric()
-                        ->step(0.01)
-                        ->visible(function (Get $get) {
-                            return $get('has_basement');
-                        }),
+                            Forms\Components\TextInput::make('basement_area')
+                                ->label(__('app.apartments.basement_area_conditional'))
+                                ->numeric()
+                                ->step(0.01)
+                                ->suffix('m²')
+                                ->disabled(function (Get $get) {
+                                    return !$get('has_basement');
+                                })
+                                ->prefixIcon('heroicon-o-square-3-stack-3d'),
 
-                    Forms\Components\Toggle::make('has_storage')
-                        ->label(__('app.apartments.has_storage'))
-                        ->default(false)
-                        ->live(),
+                            Forms\Components\Toggle::make('has_storage')
+                                ->label(__('app.apartments.has_storage'))
+                                ->default(false)
+                                ->live()
+                                ->inline(false),
 
-                    Forms\Components\TextInput::make('storage_area')
-                        ->label(__('app.apartments.storage_area_conditional'))
-                        ->numeric()
-                        ->step(0.01)
-                        ->visible(function (Get $get) {
-                            return $get('has_storage');
-                        }),
-                ])->columns(2),
+                            Forms\Components\TextInput::make('storage_area')
+                                ->label(__('app.apartments.storage_area_conditional'))
+                                ->numeric()
+                                ->step(0.01)
+                                ->suffix('m²')
+                                ->disabled(function (Get $get) {
+                                    return !$get('has_storage');
+                                })
+                                ->prefixIcon('heroicon-o-building-storefront'),
+                        ]),
 
-            // Owner selection section
-            Forms\Components\Section::make('Właściciel')
-                ->schema([
-                    Forms\Components\Select::make('primary_owner_id')
-                        ->label(__('app.apartments.primary_owner'))
-                        ->options(\App\Models\Person::all()->pluck('full_name', 'id'))
-                        ->searchable()
-                        ->createOptionForm([
-                            Forms\Components\TextInput::make('first_name')
-                                ->label('Imię')
-                                ->required(),
-                            Forms\Components\TextInput::make('last_name')
-                                ->label('Nazwisko')
-                                ->required(),
-                            Forms\Components\TextInput::make('email')
-                                ->label('Email')
-                                ->email(),
-                            Forms\Components\TextInput::make('phone')
-                                ->label('Telefon'),
+                    Forms\Components\Repeater::make('owners')
+                        ->label(__('app.apartments.owners'))
+                        ->relationship('people')
+                        ->schema([
+                            Forms\Components\Select::make('person_id')
+                                ->label('Osoba')
+                                ->options(\App\Models\Person::all()->pluck('full_name', 'id'))
+                                ->searchable()
+                                ->required()
+                                ->createOptionForm([
+                                    Forms\Components\TextInput::make('first_name')
+                                        ->label('Imię')
+                                        ->required(),
+                                    Forms\Components\TextInput::make('last_name')
+                                        ->label('Nazwisko')
+                                        ->required(),
+                                    Forms\Components\TextInput::make('email')
+                                        ->label('Email')
+                                        ->email(),
+                                    Forms\Components\TextInput::make('phone')
+                                        ->label('Telefon'),
+                                ])
+                                ->createOptionUsing(function (array $data) {
+                                    return \App\Models\Person::create($data)->id;
+                                }),
+
+                            Forms\Components\TextInput::make('ownership_share')
+                                ->label('Udział własnościowy (%)')
+                                ->numeric()
+                                ->step(0.01)
+                                ->default(100.00)
+                                ->suffix('%'),
+
+                            Forms\Components\Toggle::make('is_primary')
+                                ->label('Właściciel główny')
+                                ->default(false),
                         ])
-                        ->createOptionUsing(function (array $data) {
-                            return \App\Models\Person::create($data)->id;
-                        }),
+                        ->columns(3)
+                        ->defaultItems(1)
+                        ->addActionLabel('Dodaj właściciela')
+                        ->reorderable(false),
                 ]),
         ]);
 }
@@ -218,91 +265,78 @@ class ApartmentResource extends Resource
     }
 
     public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('community.name')
-                    ->label(__('app.common.community'))
-                    ->searchable()
-                    ->sortable(),
+{
+    return $table
+        ->columns([
+            Tables\Columns\TextColumn::make('community.name')
+                ->label(__('app.common.community'))
+                ->searchable()
+                ->sortable(),
 
-                Tables\Columns\TextColumn::make('full_number')
-                    ->label(__('app.apartments.full_number'))
-                    ->searchable(['building_number', 'apartment_number'])
-                    ->sortable(),
+            Tables\Columns\TextColumn::make('full_number')
+                ->label(__('app.apartments.full_number'))
+                ->searchable(['building_number', 'apartment_number'])
+                ->sortable(),
 
-                Tables\Columns\TextColumn::make('floor')
-                    ->label(__('app.apartments.floor'))
-                    ->numeric()
-                    ->sortable(),
+            Tables\Columns\TextColumn::make('code')
+                ->label(__('app.apartments.code'))
+                ->searchable()
+                ->sortable(),
 
-                Tables\Columns\TextColumn::make('area')
-                    ->label(__('app.apartments.area'))
-                    ->numeric(decimalPlaces: 2)
-                    ->sortable(),
+            Tables\Columns\TextColumn::make('intercom_code')
+                ->label(__('app.apartments.intercom_code'))
+                ->searchable()
+                ->sortable(),
 
-                Tables\Columns\TextColumn::make('common_area_share')
-                    ->label(__('app.apartments.common_area_share'))
-                    ->numeric(decimalPlaces: 2)
-                    ->sortable(),
+            Tables\Columns\TextColumn::make('floor_display')
+                ->label(__('app.apartments.floor_display'))
+                ->sortable(['floor']),
 
-                Tables\Columns\IconColumn::make('is_owned')
-                    ->label(__('app.apartments.is_owned'))
-                    ->boolean(),
+            Tables\Columns\TextColumn::make('area')
+                ->label(__('app.apartments.area'))
+                ->numeric(decimalPlaces: 2)
+                ->sortable()
+                ->suffix(' m²'),
 
-                Tables\Columns\IconColumn::make('is_commercial')
-                    ->label(__('app.apartments.is_commercial'))
-                    ->boolean(),
+            Tables\Columns\IconColumn::make('is_commercial')
+                ->label(__('app.apartments.is_commercial'))
+                ->boolean(),
 
-                Tables\Columns\IconColumn::make('has_basement')
-                    ->label(__('app.apartments.has_basement'))
-                    ->boolean()
-                    ->toggleable(isToggledHiddenByDefault: true),
+            Tables\Columns\IconColumn::make('has_basement')
+                ->label(__('app.apartments.has_basement'))
+                ->boolean()
+                ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\IconColumn::make('has_storage')
-                    ->label(__('app.apartments.has_storage'))
-                    ->boolean()
-                    ->toggleable(isToggledHiddenByDefault: true),
+            Tables\Columns\IconColumn::make('has_storage')
+                ->label(__('app.apartments.has_storage'))
+                ->boolean()
+                ->toggleable(isToggledHiddenByDefault: true),
+        ])
+        ->filters([
+            Tables\Filters\SelectFilter::make('community_id')
+                ->label(__('app.common.community'))
+                ->options(Community::all()->pluck('name', 'id')),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label(__('app.common.created_at'))
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->headerActions([
-            ])
-            ->filters([
-                Tables\Filters\SelectFilter::make('community_id')
-                    ->label(__('app.common.community'))
-                    ->options(Community::all()->pluck('name', 'id')),
+            Tables\Filters\TernaryFilter::make('is_commercial')
+                ->label(__('app.filters.commercial')),
 
-                Tables\Filters\TernaryFilter::make('is_owned')
-                    ->label(__('app.filters.owned')),
+            Tables\Filters\TernaryFilter::make('has_basement')
+                ->label(__('app.filters.with_basement')),
 
-                Tables\Filters\TernaryFilter::make('is_commercial')
-                    ->label(__('app.filters.commercial')),
-
-                Tables\Filters\TernaryFilter::make('has_basement')
-                    ->label(__('app.filters.with_basement')),
-
-                Tables\Filters\TernaryFilter::make('has_storage')
-                    ->label(__('app.filters.with_storage')),
-            ])
-            ->actions([
-                Tables\Actions\ViewAction::make()
-                    ->label(__('app.common.view')),
-                Tables\Actions\EditAction::make()
-                    ->label(__('app.common.edit')),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->label(__('app.common.delete')),
-                ]),
-            ])
-            ->defaultSort('community.name', 'asc');
-    }
+            Tables\Filters\TernaryFilter::make('has_storage')
+                ->label(__('app.filters.with_storage')),
+        ])
+        ->actions([
+            Tables\Actions\ViewAction::make(),
+            Tables\Actions\EditAction::make(),
+        ])
+        ->bulkActions([
+            Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]),
+        ])
+        ->defaultSort('community.name', 'asc');
+}
 
     public static function getRelations(): array
     {

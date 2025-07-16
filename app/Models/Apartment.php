@@ -15,6 +15,8 @@ class Apartment extends Model
     protected $fillable = [
         'building_number',
         'apartment_number',
+        'code',
+        'intercom_code',
         'area',
         'basement_area',
         'storage_area',
@@ -23,7 +25,6 @@ class Apartment extends Model
         'elevator_fee_coefficient',
         'has_basement',
         'has_storage',
-        'is_owned',
         'is_commercial',
         'community_id'
     ];
@@ -37,9 +38,18 @@ class Apartment extends Model
         'elevator_fee_coefficient' => 'decimal:2',
         'has_basement' => 'boolean',
         'has_storage' => 'boolean',
-        'is_owned' => 'boolean',
         'is_commercial' => 'boolean',
     ];
+
+    public function getFloorDisplayAttribute(): string
+    {
+        return $this->floor == 0 ? 'P' : (string) $this->floor;
+    }
+
+    public function getFloorDisplayLongAttribute(): string
+    {
+        return $this->floor == 0 ? 'Parter' : "Piętro {$this->floor}";
+    }
 
     public function community(): BelongsTo
     {

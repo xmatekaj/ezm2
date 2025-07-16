@@ -116,6 +116,13 @@ return [
         'primary_owner' => 'Właściciel główny',
         'basement_area_conditional' => 'Powierzchnia piwnicy (m²)',
         'storage_area_conditional' => 'Powierzchnia komórki (m²)',
+        'owners' => 'Właściciele',
+        'basement_area_conditional' => 'Powierzchnia piwnicy (m²)',
+        'storage_area_conditional' => 'Powierzchnia komórki (m²)',
+        'floor_display' => 'Piętro',
+        'basic_info_description' => 'Podstawowe informacje o lokalu',
+        'surfaces_description' => 'Powierzchnie i udziały w częściach wspólnych',
+        'additional_description' => 'Dodatkowe udogodnienia i właściciele',
     ],
 
     'financial_transactions' => [
