@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ApartmentType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,6 +28,10 @@ class Apartment extends Model
         'has_basement',
         'has_storage',
         'is_commercial',
+        'apartment_type',
+        'usage_description',
+        'has_separate_entrance',
+        'commercial_area',
         'community_id'
     ];
 
@@ -34,12 +39,14 @@ class Apartment extends Model
         'area' => 'decimal:2',
         'basement_area' => 'decimal:2',
         'storage_area' => 'decimal:2',
-        'heated_area' => 'decimal:2',
+        'commercial_area' => 'decimal:2',
         'common_area_share' => 'decimal:2',
         'elevator_fee_coefficient' => 'decimal:2',
         'has_basement' => 'boolean',
         'has_storage' => 'boolean',
         'is_commercial' => 'boolean',
+        'has_separate_entrance' => 'boolean',
+        'apartment_type' => 'string',
     ];
 
     public function getFloorDisplayAttribute(): string

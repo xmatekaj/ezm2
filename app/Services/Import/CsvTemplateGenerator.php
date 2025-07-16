@@ -1,6 +1,5 @@
 <?php
 
-// app/Services/Import/CsvTemplateGenerator.php
 namespace App\Services\Import;
 
 use Illuminate\Support\Facades\Storage;
@@ -12,16 +11,16 @@ class CsvTemplateGenerator
             'headers' => [
                 'name',
                 'full_name',
-                'address_street',
-                'address_postal_code',
-                'address_city',
-                'address_state',
+                'street',
+                'postal_code',
+                'city',
+                'state',
                 'regon',
                 'tax_id',
                 'manager_name',
-                'manager_address_street',
-                'manager_address_postal_code',
-                'manager_address_city',
+                'manager_street',
+                'manager_postal_code',
+                'manager_city',
                 'common_area_size',
                 'apartments_area',
                 'apartment_count',
@@ -38,227 +37,146 @@ class CsvTemplateGenerator
                     '123456789',
                     '1234567890',
                     'Zarządca ABC Sp. z o.o.',
-                    'ul. Zarządu 1',
-                    '40-002',
+                    'ul. Zarządcza 1',
+                    '40-001',
                     'Katowice',
-                    '250.50',
+                    '200.50',
                     '1500.75',
                     '24',
                     'tak'
                 ]
             ]
         ],
-        
         'apartments' => [
             'headers' => [
-                'community_name',
+                'community_id',
                 'building_number',
                 'apartment_number',
+                'code',
+                'intercom_code',
+                'land_mortgage_register',
                 'area',
                 'basement_area',
                 'storage_area',
-                'heated_area',
                 'common_area_share',
                 'floor',
                 'elevator_fee_coefficient',
                 'has_basement',
                 'has_storage',
-                'is_owned',
-                'is_commercial'
+                'apartment_type',
+                'usage_description',
+                'has_separate_entrance',
+                'commercial_area'
             ],
             'sample_data' => [
                 [
-                    'WM "Słoneczna"',
-                    '1',
-                    '1',
-                    '45.50',
-                    '3.20',
-                    '2.50',
-                    '45.50',
-                    '4.25',
-                    '0',
-                    '1.00',
-                    'tak',
-                    'tak',
-                    'tak',
-                    'nie'
+                    '1', // community_id
+                    '15', // building_number
+                    '1', // apartment_number
+                    '1', // code
+                    '1', // intercom_code
+                    'KA1K/12345678/9', // land_mortgage_register
+                    '45.50', // area
+                    '3.20', // basement_area
+                    '2.50', // storage_area
+                    '4.25', // common_area_share
+                    '0', // floor (ground floor)
+                    '1.00', // elevator_fee_coefficient
+                    'tak', // has_basement
+                    'tak', // has_storage
+                    'residential', // apartment_type
+                    '', // usage_description
+                    'nie', // has_separate_entrance
+                    '' // commercial_area
                 ],
                 [
-                    'WM "Słoneczna"',
-                    '1',
-                    '2',
-                    '62.30',
-                    '',
-                    '2.50',
-                    '62.30',
-                    '5.85',
-                    '1',
-                    '1.00',
-                    'nie',
-                    'tak',
-                    'tak',
-                    'nie'
-                ]
-            ]
-        ],
-        
-        'people' => [
-            'headers' => [
-                'first_name',
-                'last_name',
-                'email',
-                'phone',
-                'correspondence_address_street',
-                'correspondence_address_postal_code',
-                'correspondence_address_city',
-                'ownership_share',
-                'notes'
-            ],
-            'sample_data' => [
+                    '1', // community_id
+                    '15', // building_number
+                    '2', // apartment_number
+                    '2', // code
+                    '2', // intercom_code
+                    'KA1K/12345678/10', // land_mortgage_register
+                    '62.30', // area
+                    '', // basement_area
+                    '', // storage_area
+                    '5.85', // common_area_share
+                    '1', // floor
+                    '1.20', // elevator_fee_coefficient
+                    'nie', // has_basement
+                    'nie', // has_storage
+                    'residential', // apartment_type
+                    '', // usage_description
+                    'nie', // has_separate_entrance
+                    '' // commercial_area
+                ],
                 [
-                    'Jan',
-                    'Kowalski',
-                    'jan.kowalski@example.com',
-                    '+48 123 456 789',
-                    'ul. Mieszkańcowa 10/5',
-                    '40-001',
-                    'Katowice',
-                    '100.00',
-                    'Właściciel mieszkania'
-                ]
-            ]
-        ],
-        
-        'water_meters' => [
-            'headers' => [
-                'community_name',
-                'apartment_number',
-                'meter_number',
-                'transmitter_number',
-                'installation_date',
-                'meter_expiry_date',
-                'transmitter_installation_date',
-                'transmitter_expiry_date'
-            ],
-            'sample_data' => [
-                [
-                    'WM "Słoneczna"',
-                    '1',
-                    '100001',
-                    '200001',
-                    '2023-01-15',
-                    '2029-01-15',
-                    '2023-01-15',
-                    '2028-01-15'
+                    '1', // community_id
+                    '15', // building_number
+                    'U1', // apartment_number (commercial unit)
+                    'U1', // code
+                    'U1', // intercom_code
+                    'KA1K/12345678/11', // land_mortgage_register
+                    '85.20', // area
+                    '', // basement_area
+                    '', // storage_area
+                    '8.00', // common_area_share
+                    '0', // floor
+                    '0.00', // elevator_fee_coefficient
+                    'nie', // has_basement
+                    'nie', // has_storage
+                    'commercial', // apartment_type
+                    'Lokal usługowy - fryzjer', // usage_description
+                    'tak', // has_separate_entrance
+                    '85.20' // commercial_area
                 ]
             ]
         ]
     ];
 
-    public function generateTemplate(string $type, bool $includeSampleData = true): string
+    public function generateTemplate(string $type, bool $includeSampleData = false): string
     {
         if (!isset($this->templates[$type])) {
-            throw new \InvalidArgumentException("Unknown template type: {$type}");
+            throw new \Exception("Unknown template type: {$type}");
         }
 
         $template = $this->templates[$type];
-        $csv = '';
+        $csvContent = [];
 
         // Add headers
-        $csv .= implode(',', $this->escapeHeadersForCsv($template['headers'])) . "\n";
+        $csvContent[] = $this->arrayToCsvLine($template['headers']);
 
         // Add sample data if requested
         if ($includeSampleData && isset($template['sample_data'])) {
             foreach ($template['sample_data'] as $row) {
-                $csv .= implode(',', $this->escapeRowForCsv($row)) . "\n";
+                $csvContent[] = $this->arrayToCsvLine($row);
             }
         }
 
-        return $csv;
+        return implode("\n", $csvContent);
     }
 
-    public function downloadTemplate(string $type, bool $includeSampleData = true): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function downloadTemplate(string $type, bool $includeSampleData = false): \Symfony\Component\HttpFoundation\StreamedResponse
     {
-        $csv = $this->generateTemplate($type, $includeSampleData);
+        $content = $this->generateTemplate($type, $includeSampleData);
         $filename = "template_{$type}_" . date('Y-m-d') . '.csv';
 
-        return response()->streamDownload(function () use ($csv) {
-            echo $csv;
+        return response()->streamDownload(function () use ($content) {
+            echo $content;
         }, $filename, [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=utf-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
+    }
+
+    protected function arrayToCsvLine(array $data): string
+    {
+        return '"' . implode('","', array_map(function ($field) {
+            return str_replace('"', '""', (string) $field);
+        }, $data)) . '"';
     }
 
     public function getAvailableTemplates(): array
     {
         return array_keys($this->templates);
-    }
-
-    public function getTemplateInfo(string $type): array
-    {
-        if (!isset($this->templates[$type])) {
-            throw new \InvalidArgumentException("Unknown template type: {$type}");
-        }
-
-        $template = $this->templates[$type];
-        
-        return [
-            'type' => $type,
-            'headers' => $template['headers'],
-            'column_count' => count($template['headers']),
-            'sample_rows' => count($template['sample_data'] ?? []),
-            'description' => $this->getTemplateDescription($type),
-            'required_fields' => $this->getRequiredFields($type),
-        ];
-    }
-
-    protected function getTemplateDescription(string $type): string
-    {
-        return match($type) {
-            'communities' => 'Import housing communities with their basic information and management details.',
-            'apartments' => 'Import apartments for a specific community. Requires community to exist first.',
-            'people' => 'Import people/residents with their contact and ownership information.',
-            'water_meters' => 'Import water meters assigned to apartments. Requires apartments to exist first.',
-            default => "Import {$type} data."
-        };
-    }
-
-    protected function getRequiredFields(string $type): array
-    {
-        return match($type) {
-            'communities' => ['name', 'full_name', 'address_street', 'address_postal_code', 'address_city', 'regon', 'tax_id'],
-            'apartments' => ['apartment_number', 'community_name'],
-            'people' => ['first_name', 'last_name'],
-            'water_meters' => ['community_name', 'apartment_number', 'meter_number', 'installation_date', 'meter_expiry_date'],
-            default => []
-        };
-    }
-
-    protected function escapeHeadersForCsv(array $headers): array
-    {
-        return array_map(function ($header) {
-            return '"' . str_replace('"', '""', $header) . '"';
-        }, $headers);
-    }
-
-    protected function escapeRowForCsv(array $row): array
-    {
-        return array_map(function ($value) {
-            if (is_null($value)) {
-                return '';
-            }
-            
-            $value = (string) $value;
-            
-            // If value contains comma, quote, or newline, wrap in quotes
-            if (strpos($value, ',') !== false || 
-                strpos($value, '"') !== false || 
-                strpos($value, "\n") !== false) {
-                $value = '"' . str_replace('"', '""', $value) . '"';
-            }
-            
-            return $value;
-        }, $row);
     }
 }

@@ -8,6 +8,7 @@ class ImportManager
 {
     protected array $importers = [
         'communities' => CommunityImporter::class,
+        'apartments' => ApartmentImporter::class,
     ];
 
     public function getAvailableImporters(): array
