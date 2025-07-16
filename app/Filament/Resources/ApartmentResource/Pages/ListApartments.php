@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\ApartmentResource\Pages;
 
 use App\Filament\Resources\ApartmentResource;
-use App\Models\Community;           // <- Add this
-use App\Models\Apartment;           // <- Add this
+use App\Models\Community;
+use App\Models\Apartment;
 use Filament\Actions;
-use Filament\Forms;                 // <- Add this
-use Filament\Notifications\Notification;  // <- Add this
+use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 
 class ListApartments extends ListRecords

@@ -220,28 +220,36 @@ class CommunityResource extends Resource
 
             // Identifiers Section - Made optional with helpful descriptions
             Forms\Components\Section::make(__('app.sections.identifiers'))
-                ->description(__('app.communities.identifiers_description'))
-                ->icon('heroicon-o-identification')
-                ->collapsible()
-                ->collapsed() // Start collapsed since it's optional
-                ->schema([
-                    Forms\Components\Grid::make(2)
-                        ->schema([
-                            Forms\Components\TextInput::make('regon')
-                                ->label(__('app.communities.regon'))
-                                ->maxLength(20) // No longer required
-                                ->prefixIcon('heroicon-o-document-text')
-                                ->helperText(__('app.communities.regon_help'))
-                                ->placeholder('123456789'),
+            ->description(__('app.communities.identifiers_description'))
+            ->icon('heroicon-o-identification')
+            ->collapsible()
+            ->collapsed() // Start collapsed since it's optional
+            ->schema([
+                Forms\Components\Grid::make(2)
+                    ->schema([
+                        Forms\Components\TextInput::make('regon')
+                            ->label(__('app.communities.regon'))
+                            ->maxLength(20) // No longer required
+                            ->prefixIcon('heroicon-o-document-text')
+                            ->helperText(__('app.communities.regon_help'))
+                            ->placeholder('123456789'),
 
-                            Forms\Components\TextInput::make('tax_id')
-                                ->label(__('app.communities.tax_id'))
-                                ->maxLength(20) // No longer required
-                                ->prefixIcon('heroicon-o-banknotes')
-                                ->helperText(__('app.communities.nip_help'))
-                                ->placeholder('1234567890'),
-                        ]),
-                ]),
+                        Forms\Components\TextInput::make('tax_id')
+                            ->label(__('app.communities.tax_id'))
+                            ->maxLength(20) // No longer required
+                            ->prefixIcon('heroicon-o-banknotes')
+                            ->helperText(__('app.communities.nip_help'))
+                            ->placeholder('1234567890'),
+
+                        // ADD THIS FIELD:
+                        Forms\Components\TextInput::make('land_mortgage_register')
+                            ->label('Księga Wieczysta')
+                            ->maxLength(50)
+                            ->prefixIcon('heroicon-o-document-duplicate')
+                            ->helperText('Numer księgi wieczystej nieruchomości')
+                            ->placeholder('KA1K/00123456/7'),
+                    ]),
+            ]),
 
             // Technical Parameters Section - All optional
             Forms\Components\Section::make(__('app.sections.technical_parameters'))
@@ -344,6 +352,11 @@ class CommunityResource extends Resource
                     ->label('Województwo')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('land_mortgage_register')
+                    ->label('KW')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('apartment_count')
                     ->label('Liczba lokali')

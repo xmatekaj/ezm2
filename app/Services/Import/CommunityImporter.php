@@ -18,16 +18,18 @@ class CommunityImporter extends CsvImporter
             6 => 'address_state',
             7 => 'regon',
             8 => 'tax_id',
-            9 => 'total_area',
-            10 => 'apartments_area',
-            11 => 'apartment_count',
-            12 => 'staircase_count',
-            13 => 'has_elevator',
-            14 => 'residential_water_meters',
-            15 => 'main_water_meters',
+            9 => 'land_mortgage_register',  // ADD THIS LINE
+            10 => 'total_area',
+            11 => 'apartments_area',
+            12 => 'apartment_count',
+            13 => 'staircase_count',
+            14 => 'has_elevator',
+            15 => 'residential_water_meters',
+            16 => 'main_water_meters',
         ];
     }
 
+    // Update the validation rules to include land_mortgage_register:
     protected function getValidationRules(): array
     {
         return [
@@ -38,10 +40,9 @@ class CommunityImporter extends CsvImporter
             'address_postal_code' => ['required', 'string', 'max:10'],
             'address_city' => ['required', 'string', 'max:50'],
             'address_state' => ['required', 'string', 'max:50'],
-            // Made optional - no longer unique in import
             'regon' => ['nullable', 'string', 'max:20'],
             'tax_id' => ['nullable', 'string', 'max:20'],
-            // All technical parameters are now optional
+            'land_mortgage_register' => ['nullable', 'string', 'max:50'],  // ADD THIS LINE
             'total_area' => ['nullable', 'numeric', 'min:0'],
             'apartments_area' => ['nullable', 'numeric', 'min:0'],
             'apartment_count' => ['nullable', 'integer', 'min:0'],
@@ -81,7 +82,7 @@ class CommunityImporter extends CsvImporter
         }
 
         // Clean up empty strings to null for optional string fields
-        $optionalStringFields = ['regon', 'tax_id', 'internal_code'];
+        $optionalStringFields = ['regon', 'tax_id', 'internal_code', 'land_mortgage_register'];  // ADD land_mortgage_register HERE
         foreach ($optionalStringFields as $field) {
             if (isset($data[$field]) && $data[$field] === '') {
                 $data[$field] = null;

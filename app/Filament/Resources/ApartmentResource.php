@@ -85,6 +85,13 @@ class ApartmentResource extends Resource
                                 ->maxLength(50)
                                 ->prefixIcon('heroicon-o-phone'),
 
+                            Forms\Components\TextInput::make('land_mortgage_register')
+                                ->label('Księga Wieczysta')
+                                ->maxLength(50)
+                                ->prefixIcon('heroicon-o-document-duplicate')
+                                ->helperText('Numer księgi wieczystej lokalu')
+                                ->placeholder('KA1K/00123456/7'),
+
                             Forms\Components\TextInput::make('floor')
                                 ->label(__('app.apartments.floor'))
                                 ->numeric()
@@ -276,7 +283,16 @@ class ApartmentResource extends Resource
             Tables\Columns\TextColumn::make('full_number')
                 ->label(__('app.apartments.full_number'))
                 ->searchable(['building_number', 'apartment_number'])
-                ->sortable(),
+                ->sortable(query: function (Builder $query, string $direction): Builder {
+        return $query->orderByRaw("
+            building_number {$direction} NULLS LAST,
+            CASE
+                WHEN apartment_number ~ '^[0-9]+$' THEN CAST(apartment_number AS INTEGER)
+                ELSE 999999
+            END {$direction},
+            apartment_number {$direction}
+        ");
+    }),
 
             Tables\Columns\TextColumn::make('code')
                 ->label(__('app.apartments.code'))
@@ -287,6 +303,12 @@ class ApartmentResource extends Resource
                 ->label(__('app.apartments.intercom_code'))
                 ->searchable()
                 ->sortable(),
+
+            Tables\Columns\TextColumn::make('land_mortgage_register')
+                ->label('KW')
+                ->searchable()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: false),
 
             Tables\Columns\TextColumn::make('floor_display')
                 ->label(__('app.apartments.floor_display'))
@@ -300,12 +322,13 @@ class ApartmentResource extends Resource
 
             Tables\Columns\IconColumn::make('is_commercial')
                 ->label(__('app.apartments.is_commercial'))
-                ->boolean(),
-
-            Tables\Columns\IconColumn::make('has_basement')
-                ->label(__('app.apartments.has_basement'))
                 ->boolean()
                 ->toggleable(isToggledHiddenByDefault: true),
+
+//            Tables\Columns\IconColumn::make('has_basement')
+                //->label(__('app.apartments.has_basement'))
+                //->boolean()
+                //->toggleable(isToggledHiddenByDefault: true),
 
             Tables\Columns\IconColumn::make('has_storage')
                 ->label(__('app.apartments.has_storage'))

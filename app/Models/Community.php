@@ -21,6 +21,7 @@ class Community extends Model
         'address_state',
         'regon',
         'tax_id',
+        'land_mortgage_register',
         'common_area_size',
         'apartments_area',
         'apartment_count',

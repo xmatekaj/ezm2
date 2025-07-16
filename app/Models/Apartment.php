@@ -17,6 +17,7 @@ class Apartment extends Model
         'apartment_number',
         'code',
         'intercom_code',
+        'land_mortgage_register',
         'area',
         'basement_area',
         'storage_area',
