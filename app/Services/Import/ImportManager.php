@@ -32,4 +32,34 @@ class ImportManager
     {
         $this->importers[$type] = $importerClass;
     }
+
+    protected function validateTypeSpecificRequirements(array $rows, string $type, array $options): array
+{
+    $issues = [];
+
+    if (empty($rows)) {
+        return ['valid' => false, 'issues' => [__('app.import.no_data_rows')]];
+    }
+
+    // Check for required columns based on import type
+    $firstRow = $rows[0];
+    $requiredColumns = $this->getRequiredColumns($type);
+
+    foreach ($requiredColumns as $column) {
+        if (!$this->hasColumn($firstRow, $column)) {
+            $issues[] = __('app.import.missing_required_column', ['column' => __('app.import.columns.' . $column, [], $column)]);
+        }
+    }
+
+    // Special validation for apartments
+    if ($type === 'apartments' && !isset($options['community_id'])) {
+        $issues[] = __('app.import.apartment.community_required');
+    }
+
+    return [
+        'valid' => empty($issues),
+        'issues' => $issues
+    ];
+}
+
 }

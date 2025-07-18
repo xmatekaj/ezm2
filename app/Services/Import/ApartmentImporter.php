@@ -162,6 +162,36 @@ class ApartmentImporter extends CsvImporter
 
         return $data;
     }
+	
+	   protected function getModelClass(): string
+    {
+        return Apartment::class;
+    }
+	
+	 protected function getValidationRules(): array
+    {
+        return [
+            'community_id' => 'required|exists:communities,id',
+            'apartment_number' => 'required|string|max:10',
+            'building_number' => 'nullable|string|max:10',
+            'code' => 'nullable|string|max:20',
+            'intercom_code' => 'nullable|string|max:50',
+            'land_mortgage_register' => 'nullable|string|max:50',
+            'area' => 'nullable|numeric|min:0',
+            'basement_area' => 'nullable|numeric|min:0',
+            'storage_area' => 'nullable|numeric|min:0',
+            'common_area_share' => 'nullable|numeric|min:0|max:100',
+            'floor' => 'nullable|integer',
+            'elevator_fee_coefficient' => 'nullable|numeric|min:0',
+            'has_basement' => 'nullable|boolean',
+            'has_storage' => 'nullable|boolean',
+            'apartment_type' => 'nullable|string|max:50', // Simplified for now
+            'usage_description' => 'nullable|string',
+            'has_separate_entrance' => 'nullable|boolean',
+            'commercial_area' => 'nullable|numeric|min:0',
+            'is_commercial' => 'nullable|boolean', // Legacy
+        ];
+    }
 
     protected function createRecord(array $data): bool
     {
@@ -183,4 +213,35 @@ class ApartmentImporter extends CsvImporter
         
         return in_array(strtolower((string)$value), ['true', '1', 'tak', 'yes', 'prawda', 'x']);
     }
+	
+	public function import(array $rows, array $options = []): array
+	{
+		// Set community ID from options if provided
+		if (isset($options['community_id'])) {
+			$this->communityId = $options['community_id'];
+		}
+
+		if (!$this->communityId) {
+			throw new \InvalidArgumentException(__('app.import.apartment.community_required'));
+		}
+
+		// Verify community exists
+		if (!Community::find($this->communityId)) {
+			throw new \InvalidArgumentException(__('app.import.apartment.community_not_found'));
+		}
+
+		return parent::processRows($rows);
+	}
+
+	protected function addError(int $rowNumber, string $message): void
+	{
+		$this->importStats['failed_imports']++;
+		$this->importStats['errors'][] = __('app.import.row_error', ['row' => $rowNumber, 'message' => $message]);
+		
+		\Log::warning('Apartment import error', [
+			'row' => $rowNumber,
+			'message' => $message,
+			'community_id' => $this->communityId
+		]);
+	}
 }

@@ -73,48 +73,75 @@ class ListApartments extends ListRecords
                 }),
 
             Actions\Action::make('import')
-                ->label(__('app.common.import') . ' ' . __('app.apartments.plural'))
-                ->icon('heroicon-o-arrow-up-tray')
-                ->color('warning')
-                ->form([
-                    Forms\Components\Select::make('community_id')
-                        ->label(__('app.common.community'))
-                        ->options(Community::all()->pluck('name', 'id'))
-                        ->required()
-                        ->searchable()
-                        ->helperText('Wybierz wspólnotę, do której chcesz zaimportować lokale'),
+    ->label(__('app.import.apartment.import_apartments'))
+    ->icon('heroicon-o-arrow-up-tray')
+    ->color('warning')
+    ->form([
+        Forms\Components\Section::make(__('app.import.form.import_settings'))
+            ->description(__('app.import.apartment.import_description'))
+            ->schema([
+                Forms\Components\Select::make('community_id')
+                    ->label(__('app.import.apartment.select_community'))
+                    ->options(Community::all()->pluck('name', 'id'))
+                    ->required()
+                    ->searchable()
+                    ->helperText(__('app.import.apartment.community_help'))
+                    ->columnSpanFull(),
+            ]),
 
-                    Forms\Components\FileUpload::make('csv_file')
-                        ->label(__('app.common.csv_file'))
-                        ->required()
-                        ->acceptedFileTypes(['text/csv', 'application/csv', '.csv'])
-                        ->maxSize(10240)
-                        ->helperText('Maksymalny rozmiar pliku: 10MB'),
+        Forms\Components\Section::make(__('app.import.form.file_selection'))
+            ->schema([
+                Forms\Components\FileUpload::make('csv_file')
+                    ->label(__('app.import.form.select_file'))
+                    ->required()
+                    ->acceptedFileTypes(['text/csv', 'application/csv', '.csv', '.txt'])
+                    ->maxSize(10240)
+                    ->helperText(__('app.import.form.file_help'))
+                    ->columnSpanFull(),
+            ]),
 
-                    Forms\Components\TextInput::make('delimiter')
-                        ->label('Separator CSV')
-                        ->default(',')
-                        ->maxLength(1)
-                        ->helperText('Znak separatora kolumn (zwykle , lub ;)'),
+        Forms\Components\Section::make(__('app.import.form.format_settings'))
+            ->schema([
+                Forms\Components\Grid::make(2)
+                    ->schema([
+                        Forms\Components\Select::make('delimiter')
+                            ->label(__('app.import.form.delimiter'))
+                            ->options([
+                                ',' => __('app.import.form.comma_standard'),
+                                ';' => __('app.import.form.semicolon_polish'),
+                                "\t" => __('app.import.form.tab_excel'),
+                                '|' => __('app.import.form.pipe_custom'),
+                                'auto' => __('app.import.form.auto_detect'),
+                            ])
+                            ->default(';')
+                            ->helperText(__('app.import.form.delimiter_help')),
 
-                    Forms\Components\Select::make('encoding')
-                        ->label('Kodowanie pliku')
-                        ->options([
-                            'UTF-8' => 'UTF-8',
-                            'ISO-8859-1' => 'ISO-8859-1 (Latin-1)',
-                            'ISO-8859-2' => 'ISO-8859-2 (Latin-2)',
-                            'Windows-1250' => 'Windows-1250',
-                        ])
-                        ->default('UTF-8')
-                        ->helperText('Kodowanie znaków pliku CSV'),
+                        Forms\Components\Select::make('decimal_separator')
+                            ->label(__('app.import.form.decimal_separator'))
+                            ->options([
+                                '.' => __('app.import.form.decimal_dot'),
+                                ',' => __('app.import.form.decimal_comma'),
+                                'auto' => __('app.import.form.auto_detect'),
+                            ])
+                            ->default(',')
+                            ->helperText(__('app.import.form.decimal_help')),
 
-                    Forms\Components\Toggle::make('skip_header')
-                        ->label('Pomiń pierwszy wiersz (nagłówek)')
-                        ->default(true),
-                ])
-                ->action(function (array $data) {
-                    $this->importApartments($data);
-                }),
+                        Forms\Components\Select::make('encoding')
+                            ->label(__('app.import.form.encoding'))
+                            ->options([
+                                'UTF-8' => __('app.import.form.utf8_universal'),
+                                'ISO-8859-2' => __('app.import.form.iso_central_europe'),
+                                'Windows-1250' => __('app.import.form.windows_polish'),
+                                'ISO-8859-1' => __('app.import.form.iso_western_europe'),
+                            ])
+                            ->default('UTF-8')
+                            ->helperText(__('app.import.form.encoding_help')),
+                    ]),
+            ]),
+    ])
+    ->action(function (array $data) {
+        $this->importApartments($data);
+    }),
         ];
     }
 
