@@ -32,7 +32,12 @@ class Apartment extends Model
         'usage_description',
         'has_separate_entrance',
         'commercial_area',
-        'community_id'
+        'community_id',
+        // City ownership fields
+        'owned_by_city',
+        'city_total_area',
+        'city_apartment_count',
+        'city_common_area_share'
     ];
 
     protected $casts = [
@@ -47,6 +52,10 @@ class Apartment extends Model
         'is_commercial' => 'boolean',
         'has_separate_entrance' => 'boolean',
         'apartment_type' => 'string',
+        'owned_by_city' => 'boolean',
+        'city_total_area' => 'decimal:2',
+        'city_apartment_count' => 'integer',
+        'city_common_area_share' => 'decimal:2',
     ];
 
     public function getFloorDisplayAttribute(): string
@@ -66,6 +75,11 @@ class Apartment extends Model
 
     public function getPrimaryOwnerAttribute(): ?Person
     {
+        // City apartments don't have individual owners
+        if ($this->owned_by_city) {
+            return null;
+        }
+
         return $this->people()->wherePivot('is_primary', true)->first();
     }
 
@@ -88,31 +102,111 @@ class Apartment extends Model
 
     public function getFullNumberAttribute(): string
     {
-        return $this->building_number
+        $number = $this->building_number
             ? "{$this->building_number}/{$this->apartment_number}"
             : $this->apartment_number;
+
+        // Add city indicator for city apartments
+        if ($this->owned_by_city) {
+            $count = $this->city_apartment_count > 1 ? " ({$this->city_apartment_count} lokali)" : "";
+            return "{$number} [Miasto]{$count}";
+        }
+
+        return $number;
     }
 
-    public function getTypeDisplayAttribute(): string
+    // City ownership methods
+    public function isCityOwned(): bool
     {
-        return ApartmentType::from($this->apartment_type)->label();
+        return $this->owned_by_city;
     }
 
-    public function isResidential(): bool
+    public function isCityGroup(): bool
     {
-        return $this->apartment_type === ApartmentType::RESIDENTIAL->value;
+        return $this->owned_by_city && $this->city_apartment_count > 1;
     }
 
-    public function isCommercial(): bool
+    public function getEffectiveAreaAttribute(): ?float
     {
-        return in_array($this->apartment_type, [
-            ApartmentType::COMMERCIAL->value,
-            ApartmentType::MIXED->value
-        ]);
+        // For city apartments, use individual area if available, otherwise city_total_area
+        if ($this->owned_by_city && !$this->area && $this->city_total_area) {
+            return $this->city_total_area;
+        }
+
+        return $this->area;
     }
 
-    public function isStorage(): bool
+    public function getEffectiveCommonAreaShareAttribute(): ?float
     {
-        return $this->apartment_type === ApartmentType::STORAGE->value;
+        // For city apartments, use city_common_area_share if available
+        if ($this->owned_by_city && $this->city_common_area_share) {
+            return $this->city_common_area_share;
+        }
+
+        return $this->common_area_share;
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        if ($this->owned_by_city) {
+            if ($this->city_apartment_count > 1) {
+                return "Lokale miasta ({$this->city_apartment_count} szt.) - {$this->full_number}";
+            }
+            return "Lokal miasta - {$this->full_number}";
+        }
+
+        return $this->full_number;
+    }
+
+    // Scopes
+    public function scopeCityOwned($query)
+    {
+        return $query->where('owned_by_city', true);
+    }
+
+    public function scopePrivatelyOwned($query)
+    {
+        return $query->where('owned_by_city', false);
+    }
+
+    public function scopeForCommunity($query, $communityId)
+    {
+        return $query->where('community_id', $communityId);
+    }
+
+    // Validation rules for city apartments
+    public function getCityApartmentValidationRules(): array
+    {
+        return [
+            'owned_by_city' => 'boolean',
+            'city_total_area' => 'nullable|numeric|min:0|required_if:owned_by_city,true',
+            'city_apartment_count' => 'nullable|integer|min:1|required_if:owned_by_city,true',
+            'city_common_area_share' => 'nullable|numeric|min:0|required_if:owned_by_city,true',
+        ];
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($apartment) {
+            // Validation for city apartments
+            if ($apartment->owned_by_city) {
+                // If it's a city apartment, ensure we have either individual area or city_total_area
+                if (!$apartment->area && !$apartment->city_total_area) {
+                    throw new \InvalidArgumentException('City apartments must have either individual area or city_total_area');
+                }
+
+                // If city_apartment_count is set, it should be at least 1
+                if ($apartment->city_apartment_count && $apartment->city_apartment_count < 1) {
+                    $apartment->city_apartment_count = 1;
+                }
+
+                // Set default city_apartment_count if not specified
+                if ($apartment->owned_by_city && !$apartment->city_apartment_count) {
+                    $apartment->city_apartment_count = 1;
+                }
+            }
+        });
     }
 }

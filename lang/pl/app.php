@@ -95,35 +95,61 @@ return [
         'plural' => 'Lokale',
         'building_number' => 'Numer budynku',
         'apartment_number' => 'Numer lokalu',
+        'apartment_type' => 'Typ lokalu',
+        'usage_description' => 'Opis przeznaczenia',
+        'has_separate_entrance' => 'Osobne wejście',
+        'commercial_area' => 'Powierzchnia użytkowa (m²)',
         'area' => 'Powierzchnia (m²)',
         'basement_area' => 'Powierzchnia piwnicy (m²)',
         'storage_area' => 'Powierzchnia komórki (m²)',
-        'common_area_share' => 'Udział w częściach wspólnych (%)',
+        'common_area_share' => 'Udział w częściach wspólnych',
         'floor' => 'Piętro',
         'elevator_fee_coefficient' => 'Współczynnik opłaty windowej',
         'has_basement' => 'Posiada piwnicę',
         'has_storage' => 'Posiada komórkę',
-        'is_owned' => 'Własnościowy',
-        'is_commercial' => 'Komercyjny',
-        'full_number' => 'Pełny numer',
-        'types' => [
-            'residential' => 'Mieszkalny',
-            'commercial' => 'Komercyjny',
-            'mixed' => 'Mieszany'
-        ],
+        'is_commercial' => 'Lokal komercyjny',
         'code' => 'Kod lokalu',
         'intercom_code' => 'Kod domofonu',
-        'land_mortgage_register' => 'Księga Wieczysta',
-        'primary_owner' => 'Właściciel główny',
-        'basement_area_conditional' => 'Powierzchnia piwnicy (m²)',
-        'storage_area_conditional' => 'Powierzchnia komórki (m²)',
-        'owners' => 'Właściciele',
-        'basement_area_conditional' => 'Powierzchnia piwnicy (m²)',
-        'storage_area_conditional' => 'Powierzchnia komórki (m²)',
-        'floor_display' => 'Piętro',
-        'basic_info_description' => 'Podstawowe informacje o lokalu',
-        'surfaces_description' => 'Powierzchnie i udziały w częściach wspólnych',
-        'additional_description' => 'Dodatkowe udogodnienia i właściciele',
+        'land_mortgage_register' => 'Księga wieczysta',
+        'full_number' => 'Pełny numer',
+        'primary_owner' => 'Główny właściciel',
+
+
+        // City ownership fields
+        'owned_by_city' => 'Własność miasta',
+        'city_total_area' => 'Łączna powierzchnia lokali miasta (m²)',
+        'city_apartment_count' => 'Liczba lokali miasta',
+        'city_common_area_share' => 'Udział miasta w częściach wspólnych',
+        'city_apartments' => 'Lokale miasta',
+        'private_apartments' => 'Lokale prywatne',
+        'city_group' => 'Grupa lokali miasta',
+        'effective_area' => 'Efektywna powierzchnia',
+        'effective_common_share' => 'Efektywny udział wspólny',
+        'display_name' => 'Nazwa wyświetlana',
+
+        // Labels and descriptions
+        'city_ownership_info' => 'Informacje o własnościach miasta',
+        'city_ownership_description' => 'Lokale będące własnością gminy lub miasta',
+        'city_total_area_help' => 'Użyj gdy znasz tylko łączną powierzchnię wszystkich lokali miasta, a nie poszczególnych',
+        'city_apartment_count_help' => 'Liczba lokali miasta reprezentowanych przez ten rekord',
+        'city_common_area_share_help' => 'Łączny udział wszystkich lokali miasta w częściach wspólnych',
+
+        // Status messages
+        'city_apartment_created' => 'Lokal miasta został utworzony',
+        'city_apartment_updated' => 'Lokal miasta został zaktualizowany',
+        'city_group_info' => 'Ten rekord reprezentuje :count lokali miasta',
+        'city_apartment_single' => 'Pojedynczy lokal miasta',
+        'city_apartment_group' => 'Grupa :count lokali miasta',
+
+        // Validation messages
+        'city_area_required' => 'Lokale miasta muszą mieć określoną powierzchnię (indywidualną lub łączną)',
+        'city_share_required' => 'Lokale miasta muszą mieć określony udział w częściach wspólnych',
+        'city_count_invalid' => 'Liczba lokali miasta musi być większa niż 0',
+
+        // Import specific
+        'import_city_detected' => 'Wykryto lokal miasta na podstawie: :indicator',
+        'import_city_auto_detection' => 'Automatyczne wykrywanie lokali miasta na podstawie nazwy/kodu',
+        'city_import_examples' => 'Przykłady importu lokali miasta',
     ],
 
     'financial_transactions' => [
@@ -407,6 +433,15 @@ return [
         'example_floor' => 'Przykłady pięter',
         'example_boolean' => 'Wartości tak/nie',
         'example_type' => 'Typy lokali',
+
+        'city_ownership_help' => 'Wsparcie dla lokali będących własnością miasta',
+        'city_fields_description' => 'Pola dla lokali miasta pozwalają na import lokali komunalnych',
+        'city_auto_detection' => 'Automatyczne wykrywanie na podstawie słów kluczowych: miasto, gmina, komunalny',
+        'city_total_area_usage' => 'Użyj city_total_area gdy nie znasz powierzchni poszczególnych lokali',
+        'city_examples' => [
+            'single' => 'Pojedynczy lokal miasta z indywidualną powierzchnią',
+            'group' => 'Grupa lokali miasta z łączną powierzchnią'
+        ],
     ],
 
     // Form labels and settings
